@@ -1,0 +1,323 @@
+/* ==========================================================================
+   Game 1 Stylesheet - GameCube 4Player Mini Game
+   ========================================================================== */
+
+:root {
+  --bg-dark: #12101c;
+  --bg-card: #1d192e;
+  
+  /* Tema Warna 4 Pemain */
+  --p1-color: #ef4444; /* Merah */
+  --p2-color: #3b82f6; /* Biru */
+  --p3-color: #22c55e; /* Hijau */
+  --p4-color: #eab308; /* Kuning */
+  
+  /* Ukuran Responsif Joystick */
+  --joystick-base-size: clamp(75px, 16vw, 130px);
+  --joystick-knob-size: clamp(34px, 7vw, 56px);
+  --joystick-offset: clamp(14px, 3vw, 28px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Tampilan View */
+.view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+}
+
+.view.hidden {
+  display: none !important;
+}
+
+.view.active {
+  display: flex;
+}
+
+/* ==========================================================================
+   1. MENU PILIHAN PEMAIN (1P, 2P, 3P, 4P)
+   ========================================================================== */
+#player-select-view {
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-dark);
+  padding: 20px;
+}
+
+.player-select-card {
+  background-color: var(--bg-card);
+  border: 2px solid #362e54;
+  border-radius: 14px;
+  padding: clamp(20px, 4vh, 40px) clamp(24px, 5vw, 48px);
+  text-align: center;
+  max-width: 680px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.select-title {
+  color: #ffffff;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.select-subtitle {
+  color: #94a3b8;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  margin-bottom: 24px;
+}
+
+/* Grid 4 Tombol Pemain */
+.player-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 1.8vw, 18px);
+  margin-bottom: 24px;
+}
+
+.btn-player {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.player-num {
+  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.player-status {
+  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Tombol Dinonaktifkan (1P, 2P, 3P) */
+.btn-disabled {
+  background-color: #242038;
+  border-color: #312b4d;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Tombol 4P (Aktif & Menonjol) */
+.btn-active-4p {
+  background-color: #633eb0;
+  border-color: #a78bfa;
+  color: #ffffff;
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.35);
+}
+
+.btn-active-4p:hover {
+  background-color: #794fdb;
+  transform: translateY(-2px) scale(1.03);
+}
+
+.btn-active-4p:active {
+  transform: scale(0.96);
+  background-color: #533296;
+}
+
+.btn-back-menu {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e1;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-back-menu:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   2. ARENA GAMEPLAY
+   ========================================================================== */
+#gameplay-view {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0f0d18;
+}
+
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Bar HUD Atas */
+.game-hud-top {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+  background-color: rgba(18, 16, 28, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 16px;
+  border-radius: 30px;
+  backdrop-filter: blur(4px);
+}
+
+.game-hud-title {
+  color: #f1f5f9;
+  font-weight: 800;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  letter-spacing: 0.1em;
+}
+
+.hud-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.hud-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   3. 4 JOYSTICK DI SETIAP 4 SUDUT LAYAR
+   ========================================================================== */
+.joystick-zone {
+  position: absolute;
+  width: var(--joystick-base-size);
+  height: var(--joystick-base-size);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+/* Sudut Kiri-Bawah: P1 (Merah) */
+.joystick-zone.bottom-left {
+  bottom: var(--joystick-offset);
+  left: var(--joystick-offset);
+}
+
+/* Sudut Kanan-Bawah: P2 (Biru) */
+.joystick-zone.bottom-right {
+  bottom: var(--joystick-offset);
+  right: var(--joystick-offset);
+}
+
+/* Sudut Kiri-Atas: P3 (Hijau) */
+.joystick-zone.top-left {
+  top: var(--joystick-offset);
+  left: var(--joystick-offset);
+}
+
+/* Sudut Kanan-Atas: P4 (Kuning) */
+.joystick-zone.top-right {
+  top: var(--joystick-offset);
+  right: var(--joystick-offset);
+}
+
+/* Base Ring Joystick */
+.joystick-base {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: rgba(20, 18, 30, 0.6);
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Knob Joystick */
+.joystick-knob {
+  position: absolute;
+  width: var(--joystick-knob-size);
+  height: var(--joystick-knob-size);
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+  transition: transform 0.05s ease-out;
+  pointer-events: none;
+}
+
+.joystick-label {
+  position: absolute;
+  font-weight: 900;
+  font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+/* Penempatan Label agar tidak tertutup */
+.bottom-left .joystick-label { top: -20px; }
+.bottom-right .joystick-label { top: -20px; }
+.top-left .joystick-label { bottom: -20px; }
+.top-right .joystick-label { bottom: -20px; }
+
+/* Warna Spesifik 4 Pemain */
+.p1-theme .joystick-base { border-color: var(--p1-color); }
+.p1-theme .joystick-knob { background-color: var(--p1-color); }
+.p1-theme .joystick-label { color: var(--p1-color); }
+
+.p2-theme .joystick-base { border-color: var(--p2-color); }
+.p2-theme .joystick-knob { background-color: var(--p2-color); }
+.p2-theme .joystick-label { color: var(--p2-color); }
+
+.p3-theme .joystick-base { border-color: var(--p3-color); }
+.p3-theme .joystick-knob { background-color: var(--p3-color); }
+.p3-theme .joystick-label { color: var(--p3-color); }
+
+.p4-theme .joystick-base { border-color: var(--p4-color); }
+.p4-theme .joystick-knob { background-color: var(--p4-color); }
+.p4-theme .joystick-label { color: var(--p4-color); }

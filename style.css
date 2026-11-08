@@ -113,7 +113,26 @@ body {
   transform: scale(0.96);
 }
 
-/* Tombol Utama Tengah */
+/* Tombol Kontrol Atas (Fullscreen) - Diputar 90° untuk Mode Landscape */
+div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1),
+#initial-screen .ctrl-btn {
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+
+div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1):hover,
+#initial-screen .ctrl-btn:hover {
+  background-color: var(--ctrl-hover);
+  transform: rotate(90deg) scale(1.03);
+}
+
+div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1):active,
+#initial-screen .ctrl-btn:active {
+  transform: rotate(90deg) scale(0.96);
+}
+
+/* Tombol Utama Tengah - Diputar 90° agar Terlihat Mode Landscape */
+div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1),
 .btn-permainan {
   appearance: none;
   border: none;
@@ -124,39 +143,66 @@ body {
   font-weight: 800;
   letter-spacing: 0.12em;
   padding: clamp(16px, 3vh, 24px) clamp(36px, 10vw, 64px);
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 6px #2a1f52, 0 12px 28px rgba(0, 0, 0, 0.6);
+  transform: rotate(90deg);
+  transform-origin: center;
   transition: transform 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   touch-action: manipulation;
 }
 
+div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1):hover,
 .btn-permainan:hover {
   background-color: var(--btn-bg-hover);
-  transform: scale(1.02);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  transform: rotate(90deg) scale(1.03);
+  box-shadow: 0 0 0 6px #352668, 0 14px 32px rgba(0, 0, 0, 0.65);
 }
 
+div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1):active,
 .btn-permainan:active {
   background-color: var(--btn-bg-active);
-  transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transform: rotate(90deg) scale(0.97);
+  box-shadow: 0 0 0 6px #201740, 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================================================================
-   2. MENU GAME (Game Menu Page - Portrait Friendly)
+   2. MENU GAME (Rotasi 90° Mode Landscape, Scroll Horizontal, 3 Slot)
    ========================================================================== */
 #game-menu-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vh;
+  height: 100vw;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center center;
   flex-direction: column;
+  overflow: hidden;
 }
 
+@media (orientation: landscape) {
+  #game-menu-screen {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+}
+
+/* CSS selector 2: div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) */
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1),
 .menu-top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px var(--container-padding);
-  background-color: rgba(15, 13, 24, 0.9);
+  padding: 10px 24px;
+  background-color: rgba(15, 13, 24, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .menu-header-title {
@@ -166,34 +212,45 @@ body {
   letter-spacing: 0.08em;
 }
 
+/* CSS selector 1: div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) > button#btn-back-to-initial:nth-of-type(1) */
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) > button#btn-back-to-initial:nth-of-type(1),
 .btn-back {
   background-color: var(--ctrl-bg);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .btn-back:hover {
   background-color: var(--ctrl-hover);
+  transform: scale(1.02);
 }
 
+.btn-back:active {
+  transform: scale(0.96);
+}
+
+/* Mode Scroll Horizontal */
 .menu-scroll-container {
   flex: 1;
   width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var(--container-padding);
+  height: calc(100% - 52px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 14px 20px;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  display: flex;
+  align-items: center;
 }
 
 .menu-scroll-container::-webkit-scrollbar {
-  width: 6px;
+  height: 6px;
 }
 
 .menu-scroll-container::-webkit-scrollbar-track {
@@ -205,40 +262,36 @@ body {
   border-radius: 3px;
 }
 
-/* Grid Layout: Responsif Portrait (2-3 kolom di mobile, hingga 5 kolom di layar lebar) */
+/* Baris Grid Horizontal */
 .game-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--grid-gap);
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding-bottom: 40px;
+  height: 100%;
+  align-items: center;
+  width: max-content;
+  padding: 0 4px;
 }
 
-@media (min-width: 480px) {
-  .game-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .game-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .game-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-/* Kotak Game Solid */
+/* Kotak Game Solid: Tampilan Tepat 3 Slot per Layar */
+/* CSS selectors 3, 4, 5, 6, 7, 8, 9, 10 */
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(1),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(2),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(3),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(4),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(5),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(6),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(7),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(8),
+div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div,
 .game-box {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  flex: 0 0 calc((100vh - 40px - (var(--grid-gap) * 2)) / 3);
+  width: calc((100vh - 40px - (var(--grid-gap) * 2)) / 3);
+  max-width: 320px;
+  height: min(220px, calc(100% - 16px));
+  aspect-ratio: 16 / 10;
   background-color: var(--box-bg-1);
   border: 2px solid var(--box-border);
   border-radius: 8px;
@@ -249,6 +302,15 @@ body {
   text-decoration: none;
   transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
   touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+@media (orientation: landscape) {
+  div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div,
+  .game-box {
+    flex: 0 0 calc((100vw - 40px - (var(--grid-gap) * 2)) / 3);
+    width: calc((100vw - 40px - (var(--grid-gap) * 2)) / 3);
+  }
 }
 
 .game-box:nth-child(even) {
@@ -287,4 +349,116 @@ body {
   font-size: clamp(0.95rem, 3.5vw, 1.25rem);
   letter-spacing: 0.05em;
   pointer-events: none;
+}
+
+/* ==========================================================================
+   3. PEMILIHAN JUMLAH PEMAIN (Rotasi 90° Selaras Landscape)
+   ========================================================================== */
+#player-select-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vh;
+  height: 100vw;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (orientation: landscape) {
+  #player-select-screen {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+}
+
+.player-select-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--container-padding);
+}
+
+.player-select-card {
+  background-color: #1a1827;
+  border: 1px solid #2e2a42;
+  border-radius: 8px;
+  padding: 20px 28px;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+}
+
+.select-title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.select-subtitle {
+  color: #8b86a3;
+  font-size: 0.85rem;
+  margin-bottom: 18px;
+}
+
+.player-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.btn-player {
+  background-color: #242136;
+  border: 1px solid #2e2a42;
+  border-radius: 6px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.1s ease;
+}
+
+.player-num {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.player-status {
+  font-size: 0.7rem;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.btn-disabled {
+  background-color: #1e1c2e;
+  border-color: #26233a;
+  color: #55506d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-active-4p {
+  background-color: #5b3fa3;
+  border-color: #7b59d0;
+  color: #ffffff;
+}
+
+.btn-active-4p:hover {
+  background-color: #6a49be;
+  transform: translateY(-1px);
+}
+
+.btn-active-4p:active {
+  background-color: #4f368e;
+  transform: scale(0.97);
 }

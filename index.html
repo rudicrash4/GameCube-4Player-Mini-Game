@@ -18,7 +18,7 @@
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <!-- 1. HALAMAN AWAL (Initial Page - Portrait) -->
@@ -54,6 +54,41 @@
       </div>
     </div>
 
-    <script src="/script.js"></script>
+    <!-- 3. PEMILIHAN JUMLAH PEMAIN (Player Selection - Root Portrait) -->
+    <div id="player-select-screen" class="screen hidden">
+      <div class="menu-top-bar">
+        <button id="btn-back-to-menu" type="button" class="btn-back">
+          &larr; Kembali
+        </button>
+        <span class="menu-header-title">PILIH PEMAIN</span>
+      </div>
+      <div class="player-select-container">
+        <div class="player-select-card">
+          <h2 class="select-title">PILIH JUMLAH PEMAIN</h2>
+          <p class="select-subtitle">Game 1: 3D Cube Arena</p>
+
+          <div class="player-buttons-grid">
+            <button type="button" class="btn-player btn-disabled" data-players="1" disabled>
+              <span class="player-num">1P</span>
+              <span class="player-status">Belum Tersedia</span>
+            </button>
+            <button type="button" class="btn-player btn-disabled" data-players="2" disabled>
+              <span class="player-num">2P</span>
+              <span class="player-status">Belum Tersedia</span>
+            </button>
+            <button type="button" class="btn-player btn-disabled" data-players="3" disabled>
+              <span class="player-num">3P</span>
+              <span class="player-status">Belum Tersedia</span>
+            </button>
+            <button type="button" id="btn-select-4p" class="btn-player btn-active-4p" data-players="4">
+              <span class="player-num">4P</span>
+              <span class="player-status">Mulai</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./script.js"></script>
   </body>
 </html>

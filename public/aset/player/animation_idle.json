@@ -1,0 +1,33 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.actor.idle": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"Waist": {
+					"position": [0, "math.cos(query.life_time*245)*0.15-0.15", 0]
+				},
+				"Head": {
+					"rotation": ["math.sin(query.life_time*245+25)*-2.75", 0, "math.cos(query.life_time*122.5)*-2.5"]
+				},
+				"root": {
+					"position": ["math.sin(query.life_time*122.5)*0.25", 0, 0]
+				},
+				"Right Arm": {
+					"rotation": [0, 0, "math.sin(query.life_time*245)*1.25+1.15"],
+					"position": [0, "math.cos(query.life_time*245)*0.1+0.05", 0]
+				},
+				"Left Arm": {
+					"rotation": [0, 0, "math.sin(query.life_time*245)*-1.25-1.15"],
+					"position": [0, "math.cos(query.life_time*245)*0.1+0.05", 0]
+				},
+				"Right Leg": {
+					"rotation": [0, 0, "math.sin(query.life_time*122.5)*1.2"]
+				},
+				"Left Leg": {
+					"rotation": [0, 0, "math.sin(query.life_time*122.5)*1.2"]
+				}
+			}
+		}
+	}
+}

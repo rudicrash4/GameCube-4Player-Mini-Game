@@ -1,14 +1,11 @@
 /* ==========================================================================
-   Game 1 Stylesheet (v0.0.3)
-   - Portrait UI Player Selection (Minimalis, Kotak Sederhana, Warna Solid)
-   - Area Gameplay Landscape di dalam Layar Portrait
-   - Joystick SVG 2 Lingkaran Minimalis di 4 Sudut Area Landscape
+   Game 1 Stylesheet
+   - Canvas Fullscreen Memenuhi Layar (Mode Portrait)
+   - 4 Joystick SVG di Setiap Sudut Layar
    ========================================================================== */
 
 :root {
-  --bg-dark: #0f0e17;
-  --bg-card: #1a1827;
-  --border-solid: #2e2a42;
+  --bg-dark: #08070e;
 
   /* Warna Solid 4 Pemain */
   --p1-color: #ef4444; /* Merah */
@@ -16,9 +13,9 @@
   --p3-color: #22c55e; /* Hijau */
   --p4-color: #eab308; /* Kuning */
 
-  /* Ukuran Responsif Joystick (Dioptimalkan untuk lebar smartphone) */
-  --joy-size: clamp(54px, 14vw, 86px);
-  --joy-offset: clamp(8px, 2vw, 16px);
+  /* Ukuran Responsif Joystick di 4 Sudut Layar (Diperbesar untuk Smartphone) */
+  --joy-size: clamp(110px, 28vw, 155px);
+  --joy-offset: clamp(14px, 4vw, 28px);
 }
 
 * {
@@ -40,219 +37,25 @@ body {
   touch-action: manipulation;
 }
 
-/* Tampilan View */
-.view {
+/* ==========================================================================
+   1. ARENA GAMEPLAY FULLSCREEN MEMENUHI LAYAR
+   ========================================================================== */
+#gameplay-view {
   position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  display: flex;
-}
-
-.view.hidden {
-  display: none !important;
-}
-
-.view.active {
-  display: flex;
-}
-
-/* ==========================================================================
-   1. MENU PILIHAN PEMAIN (Minimalis, Kotak Sederhana, Warna Solid)
-   ========================================================================== */
-#player-select-view {
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background-color: var(--bg-dark);
-  padding: 20px;
-}
-
-.player-select-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-solid);
-  border-radius: 4px;
-  padding: 24px;
-  text-align: center;
-  max-width: 420px;
-  width: 100%;
-}
-
-.select-title {
-  color: #ffffff;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.select-subtitle {
-  color: #8b86a3;
-  font-size: 0.85rem;
-  margin-bottom: 24px;
-}
-
-/* Grid 4 Tombol Sederhana */
-.player-buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.btn-player {
-  background-color: #242136;
-  border: 1px solid var(--border-solid);
-  border-radius: 4px;
-  padding: 16px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-}
-
-.player-num {
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.player-status {
-  font-size: 0.75rem;
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-/* Tombol Nonaktif (1P, 2P, 3P) - Sederhana & Solid */
-.btn-disabled {
-  background-color: #1e1c2e;
-  border-color: #26233a;
-  color: #55506d;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* Tombol 4P (Aktif) - Solid Purple Accent */
-.btn-active-4p {
-  background-color: #5b3fa3;
-  border-color: #7b59d0;
-  color: #ffffff;
-}
-
-.btn-active-4p:hover {
-  background-color: #6a49be;
-}
-
-.btn-active-4p:active {
-  background-color: #4f368e;
-}
-
-.btn-back-menu {
-  width: 100%;
-  background-color: #171524;
-  border: 1px solid var(--border-solid);
-  color: #a49fc0;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.btn-back-menu:hover {
-  background-color: #221f35;
-  color: #ffffff;
-}
-
-/* ==========================================================================
-   2. ARENA GAMEPLAY (Area Landscape di dalam Layar Portrait)
-   ========================================================================== */
-#gameplay-view {
-  background-color: #08070d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.landscape-game-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* Bar Navigasi Arena */
-.game-hud-top {
-  width: 100%;
-  max-width: 900px;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #110f1c;
-  border-bottom: 1px solid #201d30;
-  z-index: 20;
-}
-
-.game-hud-title {
-  color: #cbd5e1;
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-}
-
-.hud-btn {
-  background-color: #221f33;
-  border: 1px solid #36324f;
-  color: #e2e8f0;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.hud-btn:hover {
-  background-color: #2e2a45;
-}
-
-/* Area Permainan Proporsi Landscape yang Benar */
-.landscape-stage {
-  position: relative;
-  width: 100vw;
-  max-width: calc((100vh - 60px) * (16 / 10));
-  aspect-ratio: 16 / 10;
-  max-height: calc(100vh - 60px);
-  background-color: #050508;
   overflow: hidden;
-  border-top: 1px solid #1a1827;
-  border-bottom: 1px solid #1a1827;
-}
-
-/* Jika layar sudah dalam orientasi landscape penuh */
-@media (orientation: landscape) {
-  .landscape-stage {
-    width: 100vw;
-    max-width: 100vw;
-    height: calc(100vh - 46px);
-    max-height: calc(100vh - 46px);
-    aspect-ratio: auto;
-  }
+  background-color: #05040a;
 }
 
 #three-container {
-  width: 100%;
-  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
 }
 
@@ -263,37 +66,234 @@ body {
 }
 
 /* ==========================================================================
-   3. JOYSTICK SVG 2 LINGKARAN DI 4 SUDUT AREA LANDSCAPE
-   - Lingkaran luar: area joystick
-   - Lingkaran dalam: knob
-   - Transparansi ringan, warna solid, tanpa glow/shadow berlebihan
+   2. TOMBOL PAUSE DI SISI KANAN LAYAR (SVG)
+   ========================================================================== */
+/* CSS Selector Focus: main#gameplay-view:nth-of-type(1) > header:nth-of-type(1) digantikan tombol pause */
+.btn-pause-side {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center center;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 30;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.btn-pause-side:hover {
+  transform: translateY(-50%) rotate(90deg) scale(1.08);
+  filter: drop-shadow(0 6px 16px rgba(124, 58, 237, 0.6));
+}
+
+.btn-pause-side:active {
+  transform: translateY(-50%) rotate(90deg) scale(0.94);
+}
+
+.hud-pause-svg {
+  display: block;
+  width: clamp(48px, 12vw, 58px);
+  height: clamp(48px, 12vw, 58px);
+}
+
+/* ==========================================================================
+   3. MODAL PAUSE DENGAN ROTASI 90° (TAMPILAN LANDSCAPE)
+   ========================================================================== */
+.pause-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(6, 5, 14, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  touch-action: auto;
+}
+
+.pause-modal-overlay.active {
+  display: flex;
+}
+
+/* Desain UI Rotasi 90° Selaras Mode Landscape */
+.pause-card {
+  background-color: #161326;
+  border: 2px solid #3d3460;
+  border-radius: 16px;
+  padding: 22px 28px;
+  width: min(88vw, 380px);
+  max-width: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+@media (orientation: landscape) {
+  .btn-pause-side {
+    transform: translateY(-50%);
+  }
+  .btn-pause-side:hover {
+    transform: translateY(-50%) scale(1.08);
+  }
+  .btn-pause-side:active {
+    transform: translateY(-50%) scale(0.94);
+  }
+  .pause-card {
+    transform: none;
+  }
+}
+
+.pause-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pause-header-svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.pause-title {
+  color: #f1f5f9;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+/* 3 Tombol Pause UI dengan SVG: Lanjutkan, Ulangi, Keluar */
+.pause-buttons-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-pause-action {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
+  touch-action: manipulation;
+}
+
+.btn-pause-action .btn-svg {
+  display: block;
+  pointer-events: none;
+}
+
+.btn-pause-action .btn-text {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+/* Tombol 1: Lanjutkan (Solid Ungu) */
+.btn-pause-action.btn-resume {
+  background-color: #3b287d;
+  border-color: #6d4ec4;
+}
+
+.btn-pause-action.btn-resume:hover {
+  background-color: #4c349e;
+  border-color: #8b6be8;
+  transform: translateY(-2px);
+}
+
+.btn-pause-action.btn-resume:active {
+  background-color: #2e1f63;
+  transform: scale(0.96);
+}
+
+/* Tombol 2: Ulangi (Solid Biru Tua) */
+.btn-pause-action.btn-restart {
+  background-color: #172554;
+  border-color: #2563eb;
+}
+
+.btn-pause-action.btn-restart:hover {
+  background-color: #1e3a8a;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+.btn-pause-action.btn-restart:active {
+  background-color: #0f172a;
+  transform: scale(0.96);
+}
+
+/* Tombol 3: Keluar (Solid Merah Gelap) */
+.btn-pause-action.btn-exit {
+  background-color: #450a0a;
+  border-color: #dc2626;
+}
+
+.btn-pause-action.btn-exit:hover {
+  background-color: #7f1d1d;
+  border-color: #ef4444;
+  transform: translateY(-2px);
+}
+
+.btn-pause-action.btn-exit:active {
+  background-color: #2b0606;
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   2. JOYSTICK SVG DI SETIAP SISI POJOK LAYAR FULLSCREEN (MODE PORTRAIT)
    ========================================================================== */
 .joystick-zone {
   position: absolute;
   width: var(--joy-size);
   height: var(--joy-size);
-  z-index: 15;
+  z-index: 20;
   touch-action: none;
   pointer-events: auto;
 }
 
-/* Penempatan 4 Sudut Area Gameplay Landscape */
-.joystick-zone.top-left {
+/* 4 Sudut Layar Smartphone */
+.joystick-zone.corner-top-left {
   top: var(--joy-offset);
   left: var(--joy-offset);
 }
 
-.joystick-zone.top-right {
+.joystick-zone.corner-top-right {
   top: var(--joy-offset);
   right: var(--joy-offset);
 }
 
-.joystick-zone.bottom-left {
+.joystick-zone.corner-bottom-left {
   bottom: var(--joy-offset);
   left: var(--joy-offset);
 }
 
-.joystick-zone.bottom-right {
+.joystick-zone.corner-bottom-right {
   bottom: var(--joy-offset);
   right: var(--joy-offset);
 }

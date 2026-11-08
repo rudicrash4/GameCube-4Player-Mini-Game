@@ -6,96 +6,103 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>Game 1 - GameCube 4Player</title>
+    <title>Game 1 - 4P 3D Arena (10×16)</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <!-- 1. MENU PILIHAN PEMAIN (Player Selection Menu - Portrait Minimalis) -->
-    <section id="player-select-view" class="view active">
-      <div class="player-select-card">
-        <h1 class="select-title">PILIH JUMLAH PEMAIN</h1>
-        <p class="select-subtitle">Game 1: 3D Cube Arena</p>
+    <!-- ARENA GAMEPLAY 3D FULLSCREEN PORTRAIT -->
+    <main id="gameplay-view" class="view active">
+      <!-- WebGL Three.js Container Fullscreen Memenuhi Layar -->
+      <div id="three-container"></div>
 
-        <!-- Kotak Sederhana Minimalis Warna Solid -->
-        <div class="player-buttons-grid">
-          <button type="button" class="btn-player btn-disabled" data-players="1" disabled>
-            <span class="player-num">1P</span>
-            <span class="player-status">Belum Tersedia</span>
-          </button>
-          <button type="button" class="btn-player btn-disabled" data-players="2" disabled>
-            <span class="player-num">2P</span>
-            <span class="player-status">Belum Tersedia</span>
-          </button>
-          <button type="button" class="btn-player btn-disabled" data-players="3" disabled>
-            <span class="player-num">3P</span>
-            <span class="player-status">Belum Tersedia</span>
-          </button>
-          <button type="button" id="btn-mode-4p" class="btn-player btn-active-4p" data-players="4">
-            <span class="player-num">4P</span>
-            <span class="player-status">Mulai</span>
-          </button>
-        </div>
+      <!-- Tombol Pause di Sisi Kanan Layar (SVG) -->
+      <button type="button" id="btn-pause" class="btn-pause-side" title="Pause Game" aria-label="Pause Game">
+        <svg class="hud-pause-svg" viewBox="0 0 54 54" width="54" height="54">
+          <circle cx="27" cy="27" r="25" fill="#1e1a38" stroke="#7c3aed" stroke-width="3" />
+          <rect x="18" y="16" width="5" height="22" rx="2.5" fill="#ffffff" />
+          <rect x="31" y="16" width="5" height="22" rx="2.5" fill="#ffffff" />
+        </svg>
+      </button>
 
-        <button type="button" id="btn-back-to-main" class="btn-back-menu">
-          &larr; Kembali ke Menu Utama
-        </button>
-      </div>
-    </section>
-
-    <!-- 2. ARENA GAMEPLAY 3D (Area Landscape di dalam Layar Portrait) -->
-    <section id="gameplay-view" class="view hidden">
-      <div class="landscape-game-wrapper">
-        <!-- Top Bar Navigasi Arena -->
-        <div class="game-hud-top">
-          <button type="button" id="btn-exit-game" class="hud-btn">
-            &larr; Pilih Pemain
-          </button>
-          <div class="game-hud-title">4P 3D ARENA</div>
-          <button type="button" id="btn-reset-positions" class="hud-btn">
-            Reset
-          </button>
-        </div>
-
-        <!-- Area Gameplay Landscape -->
-        <div id="landscape-stage" class="landscape-stage">
-          <!-- WebGL Three.js Container -->
-          <div id="three-container"></div>
-
-          <!-- 4 BUAH SVG JOYSTICK DI 4 SUDUT AREA GAMEPLAY LANDSCAPE -->
-          <!-- Sudut Kiri-Atas: Player 3 (Hijau #22c55e) -->
-          <div id="joystick-p3" class="joystick-zone top-left" data-player="p3">
-            <svg class="joystick-svg" viewBox="0 0 100 100">
-              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#22c55e" fill-opacity="0.2" stroke="#22c55e" stroke-width="2.5" />
-              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#22c55e" fill-opacity="0.85" />
+      <!-- Modal Pause (Rotasi 90° Tampilan Landscape) dengan 3 Tombol SVG -->
+      <div id="pause-modal" class="pause-modal-overlay">
+        <div class="pause-card">
+          <div class="pause-header">
+            <svg class="pause-header-svg" viewBox="0 0 44 44" width="44" height="44">
+              <circle cx="22" cy="22" r="20" fill="rgba(124, 58, 237, 0.25)" stroke="#8b5cf6" stroke-width="2.5" />
+              <rect x="15" y="13" width="4" height="18" rx="2" fill="#c4b5fd" />
+              <rect x="25" y="13" width="4" height="18" rx="2" fill="#c4b5fd" />
             </svg>
+            <h2 class="pause-title">GAME DIHENTIKAN</h2>
           </div>
 
-          <!-- Sudut Kanan-Atas: Player 4 (Kuning #eab308) -->
-          <div id="joystick-p4" class="joystick-zone top-right" data-player="p4">
-            <svg class="joystick-svg" viewBox="0 0 100 100">
-              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#eab308" fill-opacity="0.2" stroke="#eab308" stroke-width="2.5" />
-              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#eab308" fill-opacity="0.85" />
-            </svg>
-          </div>
+          <div class="pause-buttons-group">
+            <!-- 1. Tombol Lanjutkan -->
+            <button type="button" id="btn-resume" class="btn-pause-action btn-resume">
+              <svg class="btn-svg" viewBox="0 0 32 32" width="32" height="32">
+                <circle cx="16" cy="16" r="15" fill="#4c339e" stroke="#7c54d5" stroke-width="2" />
+                <polygon points="12,9 24,16 12,23" fill="#ffffff" />
+              </svg>
+              <span class="btn-text">Lanjutkan</span>
+            </button>
 
-          <!-- Sudut Kiri-Bawah: Player 1 (Merah #ef4444) -->
-          <div id="joystick-p1" class="joystick-zone bottom-left" data-player="p1">
-            <svg class="joystick-svg" viewBox="0 0 100 100">
-              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444" stroke-width="2.5" />
-              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#ef4444" fill-opacity="0.85" />
-            </svg>
-          </div>
+            <!-- 2. Tombol Ulangi -->
+            <button type="button" id="btn-restart" class="btn-pause-action btn-restart">
+              <svg class="btn-svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="16" cy="16" r="15" fill="#1e293b" stroke="#3b82f6" stroke-width="2" />
+                <path d="M22 16a6 6 0 1 1-2-4.5L22 14" stroke="#60a5fa" />
+                <polyline points="22 9 22 14 17 14" stroke="#60a5fa" />
+              </svg>
+              <span class="btn-text">Ulangi</span>
+            </button>
 
-          <!-- Sudut Kanan-Bawah: Player 2 (Biru #3b82f6) -->
-          <div id="joystick-p2" class="joystick-zone bottom-right" data-player="p2">
-            <svg class="joystick-svg" viewBox="0 0 100 100">
-              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#3b82f6" fill-opacity="0.2" stroke="#3b82f6" stroke-width="2.5" />
-              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#3b82f6" fill-opacity="0.85" />
-            </svg>
+            <!-- 3. Tombol Keluar -->
+            <button type="button" id="btn-exit" class="btn-pause-action btn-exit">
+              <svg class="btn-svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="16" cy="16" r="15" fill="#36171d" stroke="#ef4444" stroke-width="2" />
+                <path d="M14 22H11a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h3" stroke="#f87171" />
+                <polyline points="18 19 23 16 18 13" stroke="#f87171" />
+                <line x1="23" y1="16" x2="13" y2="16" stroke="#f87171" />
+              </svg>
+              <span class="btn-text">Keluar</span>
+            </button>
           </div>
         </div>
       </div>
-    </section>
+
+      <!-- 4 BUAH SVG JOYSTICK DI SETIAP POJOK LAYAR FULLSCREEN (MODE PORTRAIT) -->
+      <!-- Sudut Kiri-Atas: Player 3 (Hijau #22c55e) -->
+      <div id="joystick-p3" class="joystick-zone corner-top-left" data-player="p3">
+        <svg class="joystick-svg" viewBox="0 0 100 100">
+          <circle class="joy-outer" cx="50" cy="50" r="46" fill="#22c55e" fill-opacity="0.25" stroke="#22c55e" stroke-width="2.5" />
+          <circle class="joy-inner" cx="50" cy="50" r="22" fill="#22c55e" fill-opacity="0.85" />
+        </svg>
+      </div>
+
+      <!-- Sudut Kanan-Atas: Player 4 (Kuning #eab308) -->
+      <div id="joystick-p4" class="joystick-zone corner-top-right" data-player="p4">
+        <svg class="joystick-svg" viewBox="0 0 100 100">
+          <circle class="joy-outer" cx="50" cy="50" r="46" fill="#eab308" fill-opacity="0.25" stroke="#eab308" stroke-width="2.5" />
+          <circle class="joy-inner" cx="50" cy="50" r="22" fill="#eab308" fill-opacity="0.85" />
+        </svg>
+      </div>
+
+      <!-- Sudut Kiri-Bawah: Player 1 (Merah #ef4444) -->
+      <div id="joystick-p1" class="joystick-zone corner-bottom-left" data-player="p1">
+        <svg class="joystick-svg" viewBox="0 0 100 100">
+          <circle class="joy-outer" cx="50" cy="50" r="46" fill="#ef4444" fill-opacity="0.25" stroke="#ef4444" stroke-width="2.5" />
+          <circle class="joy-inner" cx="50" cy="50" r="22" fill="#ef4444" fill-opacity="0.85" />
+        </svg>
+      </div>
+
+      <!-- Sudut Kanan-Bawah: Player 2 (Biru #3b82f6) -->
+      <div id="joystick-p2" class="joystick-zone corner-bottom-right" data-player="p2">
+        <svg class="joystick-svg" viewBox="0 0 100 100">
+          <circle class="joy-outer" cx="50" cy="50" r="46" fill="#3b82f6" fill-opacity="0.25" stroke="#3b82f6" stroke-width="2.5" />
+          <circle class="joy-inner" cx="50" cy="50" r="22" fill="#3b82f6" fill-opacity="0.85" />
+        </svg>
+      </div>
+    </main>
 
     <script type="module" src="./script.js"></script>
   </body>

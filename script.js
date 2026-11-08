@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * GameCube 4Player Mini Game - Root Script (v0.0.2)
+ * GameCube 4Player Mini Game - Root Script (v0.0.3 Portrait)
  * ==========================================================================
  */
 
@@ -9,11 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const gameMenuScreen = document.getElementById("game-menu-screen");
   const btnPermainan = document.getElementById("btn-permainan");
   const btnBack = document.getElementById("btn-back-to-initial");
-  const btnRotate = document.getElementById("btn-rotate");
   const btnFullscreen = document.getElementById("btn-fullscreen");
   const gameGrid = document.getElementById("game-grid");
 
-  const TOTAL_GAME_BOXES = 25;
+  const TOTAL_GAME_BOXES = 24;
 
   /**
    * Render kotak-kotak game:
@@ -35,9 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
     game1Label.textContent = "GAME 1";
     game1Box.appendChild(game1Label);
 
-    // Navigasi ke folder games/game_1
+    // Navigasi ke folder games/game_1 (jalur relatif agar kompatibel dengan GitHub Pages)
     game1Box.addEventListener("click", () => {
-      window.location.href = "/games/game_1/index.html";
+      window.location.href = "./games/game_1/index.html";
     });
 
     gameGrid.appendChild(game1Box);
@@ -76,31 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fitur Fullscreen
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {
-        // Fallback jika API diblokir browser
-      });
+      document.documentElement.requestFullscreen().catch(() => {});
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
-    }
-  }
-
-  // Fitur Rotasi Layar (Landscape toggle)
-  async function toggleRotation() {
-    try {
-      if (screen.orientation && screen.orientation.lock) {
-        if (screen.orientation.type.includes("portrait")) {
-          await screen.orientation.lock("landscape");
-        } else {
-          await screen.orientation.unlock();
-        }
-      } else {
-        // Fallback visual rotation toggle jika browser tidak mengizinkan orientation lock
-        document.body.classList.toggle("simulated-landscape");
-      }
-    } catch {
-      document.body.classList.toggle("simulated-landscape");
     }
   }
 
@@ -115,9 +94,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnFullscreen) {
     btnFullscreen.addEventListener("click", toggleFullscreen);
-  }
-
-  if (btnRotate) {
-    btnRotate.addEventListener("click", toggleRotation);
   }
 });

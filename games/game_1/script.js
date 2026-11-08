@@ -1,226 +1,341 @@
 /**
  * ==========================================================================
- * Game 1 Script - 4-Player Corner Joysticks & Movement Engine
+ * Game 1 - 3D Cube Arena & 4-Player Corner SVG Joysticks (v0.0.3)
+ * Menggunakan Three.js dengan Kamera Top-Down 90°, Pencahayaan Kaya, & 16x16 Arena
  * ==========================================================================
  */
 
+import * as THREE from "three";
+
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Elemen Antarmuka
+  // 1. Elemen DOM
   const playerSelectView = document.getElementById("player-select-view");
   const gameplayView = document.getElementById("gameplay-view");
   const btnMode4P = document.getElementById("btn-mode-4p");
   const btnBackToMain = document.getElementById("btn-back-to-main");
   const btnExitGame = document.getElementById("btn-exit-game");
   const btnResetPositions = document.getElementById("btn-reset-positions");
-  const canvas = document.getElementById("game-canvas");
-  const ctx = canvas.getContext("2d");
+  const threeContainer = document.getElementById("three-container");
+  const landscapeStage = document.getElementById("landscape-stage");
 
-  // 2. Data Pemain & Kontrol
+  // 2. Dimensi Arena 16x16 & Fisika
+  const ARENA_SIZE = 16;
+  const SPACING = 1.0;
+  const BLOCK_SIZE = 0.88; // Celah antar kubus ~0.12 agar setiap block terlihat terpisah
+  const BLOCK_HEIGHT = 0.6;
+  const HALF_SPAN = ((ARENA_SIZE - 1) * SPACING) / 2; // 7.5
+  const ARENA_BOUND = HALF_SPAN - 0.1; // Batas pemain agar tidak jatuh dari arena
+  const PLAYER_SIZE = 0.9;
+  const PLAYER_Y = BLOCK_HEIGHT / 2 + PLAYER_SIZE / 2; // Di atas permukaan balok
+
+  // 3. Konfigurasi 4 Pemain
   const PLAYERS = {
     p1: {
       id: "p1",
       name: "P1",
-      color: "#ef4444",
-      glowColor: "rgba(239, 68, 68, 0.4)",
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      radius: 22,
+      color: 0xef4444, // Merah (#ef4444)
+      startPos: [-HALF_SPAN + 0.5, PLAYER_Y, HALF_SPAN - 0.5], // Kiri-Bawah (Sudut P1)
       inputX: 0,
       inputY: 0,
-      speed: 4.8,
+      speed: 8.5,
+      mesh: null,
     },
     p2: {
       id: "p2",
       name: "P2",
-      color: "#3b82f6",
-      glowColor: "rgba(59, 130, 246, 0.4)",
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      radius: 22,
+      color: 0x3b82f6, // Biru (#3b82f6)
+      startPos: [HALF_SPAN - 0.5, PLAYER_Y, HALF_SPAN - 0.5], // Kanan-Bawah (Sudut P2)
       inputX: 0,
       inputY: 0,
-      speed: 4.8,
+      speed: 8.5,
+      mesh: null,
     },
     p3: {
       id: "p3",
       name: "P3",
-      color: "#22c55e",
-      glowColor: "rgba(34, 197, 94, 0.4)",
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      radius: 22,
+      color: 0x22c55e, // Hijau (#22c55e)
+      startPos: [-HALF_SPAN + 0.5, PLAYER_Y, -HALF_SPAN + 0.5], // Kiri-Atas (Sudut P3)
       inputX: 0,
       inputY: 0,
-      speed: 4.8,
+      speed: 8.5,
+      mesh: null,
     },
     p4: {
       id: "p4",
       name: "P4",
-      color: "#eab308",
-      glowColor: "rgba(234, 179, 8, 0.4)",
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      radius: 22,
+      color: 0xeab308, // Kuning (#eab308)
+      startPos: [HALF_SPAN - 0.5, PLAYER_Y, -HALF_SPAN + 0.5], // Kanan-Atas (Sudut P4)
       inputX: 0,
       inputY: 0,
-      speed: 4.8,
+      speed: 8.5,
+      mesh: null,
     },
   };
 
+  // 4. Inisialisasi Three.js
+  let scene, camera, renderer;
+  let isGameRunning = false;
   let animationFrameId = null;
-  let isGameActive = false;
+  const clock = new THREE.Clock();
 
-  // 3. Setup Ukuran Canvas Responsif
-  function resizeCanvas() {
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    ctx.scale(dpr, dpr);
-  }
+  function initThree() {
+    if (renderer) return;
 
-  // 4. Inisialisasi Posisi Awal 4 Pemain
-  function resetPlayerPositions() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    // A. Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x080711);
 
-    PLAYERS.p1.x = w * 0.28;
-    PLAYERS.p1.y = h * 0.65;
-    PLAYERS.p2.x = w * 0.72;
-    PLAYERS.p2.y = h * 0.65;
-    PLAYERS.p3.x = w * 0.28;
-    PLAYERS.p3.y = h * 0.35;
-    PLAYERS.p4.x = w * 0.72;
-    PLAYERS.p4.y = h * 0.35;
+    // B. Camera - 90° Top-Down ke Arah Bawah, Tepat di Tengah Arena
+    camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 200);
+    updateCameraToFitArena();
 
-    Object.values(PLAYERS).forEach((p) => {
-      p.vx = 0;
-      p.vy = 0;
-      p.inputX = 0;
-      p.inputY = 0;
+    // C. Renderer
+    const initialWidth = landscapeStage ? landscapeStage.clientWidth : window.innerWidth;
+    const initialHeight = landscapeStage ? landscapeStage.clientHeight : window.innerHeight;
+
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance",
     });
+    renderer.setSize(initialWidth, initialHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    threeContainer.appendChild(renderer.domElement);
+
+    // D. Sistem Pencahayaan Multi-Arah
+    setupLighting();
+
+    // E. Arena 3D: Lantai 16 x 16 Block Cube
+    createArenaBlocks();
+
+    // F. Panel Besar Biru di Bawah Seluruh Arena (Air)
+    createWaterPanel();
+
+    // G. 4 Karakter Pemain Cube
+    createPlayerCubes();
   }
 
-  // 5. Game Loop & Rendering (60fps)
-  function gameLoop() {
-    if (!isGameActive) return;
+  /**
+   * Menghitung posisi kamera 90° tegak lurus ke bawah tepat di tengah (0, 0, 0),
+   * memastikan SELURUH 16x16 cube dan batas arena selalu masuk ke dalam frame kamera.
+   */
+  function updateCameraToFitArena() {
+    if (!camera || !landscapeStage) return;
+    const width = landscapeStage.clientWidth || window.innerWidth;
+    const height = landscapeStage.clientHeight || window.innerHeight;
+    const aspect = width / (height || 1);
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    camera.aspect = aspect;
+    camera.fov = 45;
 
-    ctx.clearRect(0, 0, width, height);
+    // Bentang total arena yang harus masuk frame dengan ruang margin aman (16 blok = 16 unit + margin)
+    const arenaVisibleSpan = 21.0;
+    const vFovRad = (camera.fov * Math.PI) / 360; // Setengah sudut FOV dalam radian
+    const tanHalfFov = Math.tan(vFovRad);
 
-    // Gambar Garis Lapangan Lembut
-    drawArenaField(width, height);
+    const distYVertical = arenaVisibleSpan / (2 * tanHalfFov);
+    const distYHorizontal = arenaVisibleSpan / (2 * tanHalfFov * aspect);
 
-    // Update dan Gambar Masing-masing Pemain
+    // Ambil nilai tertinggi agar semua sudut dan baris kubus selalu masuk frame kamera
+    const optimalY = Math.max(distYVertical, distYHorizontal, 27.0);
+
+    // Posisi kamera 90 derajat tepat di atas titik tengah arena (0, optimalY, 0)
+    camera.position.set(0, optimalY, 0);
+
+    // Menghadap tegak lurus 90 derajat ke bawah (0, 0, 0)
+    // Up vector (0, 0, -1) memastikan -Z adalah arah ATAS layar dan +X adalah KANAN layar
+    camera.up.set(0, 0, -1);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+  }
+
+  /**
+   * Sistem Pencahayaan Komprehensif
+   * Memberikan kedalaman visual 3D yang tajam saat dilihat dari sudut 90° atas
+   */
+  function setupLighting() {
+    // 1. Hemisphere Light (Pencahayaan Langit & Pantulan Air)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x0284c7, 1.3);
+    hemiLight.position.set(0, 35, 0);
+    scene.add(hemiLight);
+
+    // 2. Directional Key Light (Cahaya Utama dari Sudut Kanan-Bawah)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    keyLight.position.set(18, 30, 18);
+    scene.add(keyLight);
+
+    // 3. Directional Fill Light (Cahaya Pengisi dari Sudut Berlawanan Kiri-Atas)
+    const fillLight = new THREE.DirectionalLight(0xcfd8dc, 1.2);
+    fillLight.position.set(-18, 26, -18);
+    scene.add(fillLight);
+
+    // 4. Directional Accent Light (Mempertegas Tepi Kubus)
+    const accentLight = new THREE.DirectionalLight(0xe0e7ff, 0.9);
+    accentLight.position.set(-15, 25, 15);
+    scene.add(accentLight);
+
+    // 5. Point Light di Atas Tengah Arena untuk Gradasi Sentral
+    const centerPointLight = new THREE.PointLight(0xffffff, 0.7, 40);
+    centerPointLight.position.set(0, 10, 0);
+    scene.add(centerPointLight);
+  }
+
+  // Buat 16 x 16 Block Kubus dengan Celah Terpisah & Pola Solid
+  function createArenaBlocks() {
+    const blockGeo = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_HEIGHT, BLOCK_SIZE);
+
+    // Pola warna solid dua nada halus agar setiap balok terlihat kontras dari atas
+    const blockMatA = new THREE.MeshStandardMaterial({
+      color: 0x384556, // Solid slate grey
+      roughness: 0.35,
+      metalness: 0.15,
+    });
+
+    const blockMatB = new THREE.MeshStandardMaterial({
+      color: 0x2d3748, // Slightly darker solid slate
+      roughness: 0.38,
+      metalness: 0.15,
+    });
+
+    const totalBlocks = ARENA_SIZE * ARENA_SIZE;
+    const instancedArenaA = new THREE.InstancedMesh(blockGeo, blockMatA, Math.ceil(totalBlocks / 2));
+    const instancedArenaB = new THREE.InstancedMesh(blockGeo, blockMatB, Math.ceil(totalBlocks / 2));
+
+    const dummy = new THREE.Object3D();
+    let idxA = 0;
+    let idxB = 0;
+
+    for (let r = 0; r < ARENA_SIZE; r++) {
+      for (let c = 0; c < ARENA_SIZE; c++) {
+        const x = (c - (ARENA_SIZE - 1) / 2) * SPACING;
+        const z = (r - (ARENA_SIZE - 1) / 2) * SPACING;
+        dummy.position.set(x, 0, z);
+        dummy.updateMatrix();
+
+        if ((r + c) % 2 === 0) {
+          instancedArenaA.setMatrixAt(idxA++, dummy.matrix);
+        } else {
+          instancedArenaB.setMatrixAt(idxB++, dummy.matrix);
+        }
+      }
+    }
+
+    instancedArenaA.instanceMatrix.needsUpdate = true;
+    instancedArenaB.instanceMatrix.needsUpdate = true;
+    scene.add(instancedArenaA);
+    scene.add(instancedArenaB);
+  }
+
+  // Panel Besar Berwarna Biru di Bawah Seluruh Arena (Air)
+  function createWaterPanel() {
+    const waterGeo = new THREE.BoxGeometry(38, 0.5, 38);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7, // Solid blue water
+      roughness: 0.2,
+      metalness: 0.1,
+    });
+    const water = new THREE.Mesh(waterGeo, waterMat);
+    water.position.set(0, -0.65, 0);
+    scene.add(water);
+  }
+
+  // Buat 4 Karakter Pemain Menggunakan Cube Geometry
+  function createPlayerCubes() {
+    const playerGeo = new THREE.BoxGeometry(PLAYER_SIZE, PLAYER_SIZE, PLAYER_SIZE);
+
     Object.values(PLAYERS).forEach((player) => {
-      // Hitung kecepatan berdasarkan input joystick
-      player.vx = player.inputX * player.speed;
-      player.vy = player.inputY * player.speed;
+      const mat = new THREE.MeshStandardMaterial({
+        color: player.color,
+        roughness: 0.25,
+        metalness: 0.2,
+      });
 
-      player.x += player.vx;
-      player.y += player.vy;
+      const mesh = new THREE.Mesh(playerGeo, mat);
+      mesh.position.set(...player.startPos);
+      scene.add(mesh);
+      player.mesh = mesh;
+    });
+  }
 
-      // Batasi agar pemain tetap di dalam arena layar
-      const pad = player.radius + 6;
-      if (player.x < pad) player.x = pad;
-      if (player.x > width - pad) player.x = width - pad;
-      if (player.y < pad) player.y = pad;
-      if (player.y > height - pad) player.y = height - pad;
-
-      // Gambar Karakter Player
-      drawPlayer(player);
+  // Reset Posisi Semua Pemain ke 4 Sudut Awal
+  function resetAllPlayers() {
+    Object.values(PLAYERS).forEach((player) => {
+      if (player.mesh) {
+        player.mesh.position.set(...player.startPos);
+      }
+      player.inputX = 0;
+      player.inputY = 0;
     });
 
-    animationFrameId = requestAnimationFrame(gameLoop);
+    // Reset posisi visual knob SVG
+    document.querySelectorAll(".joy-inner").forEach((knob) => {
+      knob.style.transform = "translate(0px, 0px)";
+    });
   }
 
-  // Gambar Lapangan Mini Game
-  function drawArenaField(width, height) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.lineWidth = 2;
+  // Handle Resize untuk Landscape Stage
+  function handleResize() {
+    if (!renderer || !camera || !landscapeStage) return;
+    const width = landscapeStage.clientWidth;
+    const height = landscapeStage.clientHeight;
+    if (width === 0 || height === 0) return;
 
-    // Lingkaran Tengah
-    ctx.beginPath();
-    ctx.arc(width / 2, height / 2, Math.min(width, height) * 0.18, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Garis Tengah Horizontal & Vertikal
-    ctx.beginPath();
-    ctx.moveTo(width / 2, 0);
-    ctx.lineTo(width / 2, height);
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.stroke();
-
-    ctx.restore();
+    renderer.setSize(width, height);
+    updateCameraToFitArena();
   }
 
-  // Gambar Karakter Pemain
-  function drawPlayer(player) {
-    ctx.save();
+  // 5. Game Loop Three.js
+  function tick() {
+    if (!isGameRunning) return;
 
-    // Bayangan / Glow
-    ctx.shadowColor = player.glowColor;
-    ctx.shadowBlur = 12;
+    const delta = Math.min(clock.getDelta(), 0.1);
 
-    // Badan Lingkaran Solid
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-    ctx.fillStyle = player.color;
-    ctx.fill();
+    // Update Pergerakan 4 Pemain Berdasarkan Input Joystick
+    Object.values(PLAYERS).forEach((player) => {
+      if (!player.mesh) return;
 
-    // Border Karakter
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#ffffff";
-    ctx.stroke();
+      if (player.inputX !== 0 || player.inputY !== 0) {
+        // Gerakan X (Kiri/Kanan di layar)
+        player.mesh.position.x += player.inputX * player.speed * delta;
+        // Gerakan Z (Atas/Bawah di layar: inputY positif ke arah bawah layar / +Z)
+        player.mesh.position.z += player.inputY * player.speed * delta;
 
-    // Teks Label ID Pemain (P1, P2, P3, P4)
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 13px -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(player.name, player.x, player.y);
+        // Batasi agar pemain tetap di area permukaan arena 16x16
+        player.mesh.position.x = Math.max(-ARENA_BOUND, Math.min(ARENA_BOUND, player.mesh.position.x));
+        player.mesh.position.z = Math.max(-ARENA_BOUND, Math.min(ARENA_BOUND, player.mesh.position.z));
+      }
+    });
 
-    ctx.restore();
+    // Render Scene 3D
+    renderer.render(scene, camera);
+
+    animationFrameId = requestAnimationFrame(tick);
   }
 
-  // 6. Logika Multi-Touch Joystick 4 Sudut
-  const activeTouches = {}; // Menyimpan touch identifier -> player key
+  // 6. Sistem Kontrol Virtual Joystick SVG (Multi-Touch Simultan)
+  const activeTouchMap = {}; // touch.identifier -> { updateFn, resetFn }
 
-  function setupJoystick(playerKey, elementId) {
+  function setupSvgJoystick(playerKey, elementId) {
     const zone = document.getElementById(elementId);
     if (!zone) return;
 
-    const base = zone.querySelector(".joystick-base");
-    const knob = zone.querySelector(".joystick-knob");
+    const knob = zone.querySelector(".joy-inner");
 
-    function updateKnobPosition(clientX, clientY) {
-      const rect = base.getBoundingClientRect();
+    function updateKnob(clientX, clientY) {
+      const rect = zone.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
       let dx = clientX - centerX;
       let dy = clientY - centerY;
-      const distance = Math.hypot(dx, dy);
-      const maxRadius = rect.width * 0.38;
+      const dist = Math.hypot(dx, dy);
+      const maxRadius = rect.width * 0.36;
 
-      if (distance > maxRadius) {
-        dx = (dx / distance) * maxRadius;
-        dy = (dy / distance) * maxRadius;
+      if (dist > maxRadius) {
+        dx = (dx / dist) * maxRadius;
+        dy = (dy / dist) * maxRadius;
       }
 
+      // Transform knob SVG secara langsung
       knob.style.transform = `translate(${dx}px, ${dy}px)`;
 
       // Normalisasi input (-1 hingga 1)
@@ -234,34 +349,32 @@ document.addEventListener("DOMContentLoaded", () => {
       PLAYERS[playerKey].inputY = 0;
     }
 
-    // Touch Event Handling (Multitouch Simultan)
+    // Touch Event Handling
     zone.addEventListener(
       "touchstart",
       (e) => {
         e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          activeTouches[touch.identifier] = {
-            playerKey,
-            update: updateKnobPosition,
-            reset: resetKnob,
+          const t = e.changedTouches[i];
+          activeTouchMap[t.identifier] = {
+            updateFn: updateKnob,
+            resetFn: resetKnob,
           };
-          updateKnobPosition(touch.clientX, touch.clientY);
+          updateKnob(t.clientX, t.clientY);
         }
       },
       { passive: false }
     );
 
-    // Mouse / Pointer Event Handling (Untuk Pengujian di Desktop)
+    // Mouse Event Handling (Untuk Pengujian di Desktop)
     let isMouseDown = false;
-
     zone.addEventListener("mousedown", (e) => {
       isMouseDown = true;
-      updateKnobPosition(e.clientX, e.clientY);
+      updateKnob(e.clientX, e.clientY);
 
-      function onMouseMove(moveEvent) {
+      function onMouseMove(me) {
         if (!isMouseDown) return;
-        updateKnobPosition(moveEvent.clientX, moveEvent.clientY);
+        updateKnob(me.clientX, me.clientY);
       }
 
       function onMouseUp() {
@@ -276,107 +389,107 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Global Touch Move & End Listeners untuk Melacak Multi-Touch
+  // Global Touch Listeners untuk Multi-Touch 4 Pemain Simultan
   window.addEventListener(
     "touchmove",
     (e) => {
       for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (activeTouches[touch.identifier]) {
-          activeTouches[touch.identifier].update(touch.clientX, touch.clientY);
+        const t = e.changedTouches[i];
+        if (activeTouchMap[t.identifier]) {
+          activeTouchMap[t.identifier].updateFn(t.clientX, t.clientY);
         }
       }
     },
     { passive: false }
   );
 
-  function handleTouchEndGlobal(e) {
+  function handleTouchEnd(e) {
     for (let i = 0; i < e.changedTouches.length; i++) {
-      const touch = e.changedTouches[i];
-      if (activeTouches[touch.identifier]) {
-        activeTouches[touch.identifier].reset();
-        delete activeTouches[touch.identifier];
+      const t = e.changedTouches[i];
+      if (activeTouchMap[t.identifier]) {
+        activeTouchMap[t.identifier].resetFn();
+        delete activeTouchMap[t.identifier];
       }
     }
   }
 
-  window.addEventListener("touchend", handleTouchEndGlobal);
-  window.addEventListener("touchcancel", handleTouchEndGlobal);
+  window.addEventListener("touchend", handleTouchEnd);
+  window.addEventListener("touchcancel", handleTouchEnd);
 
-  // Inisialisasi 4 Joystick di 4 Sudut
-  setupJoystick("p1", "joystick-p1");
-  setupJoystick("p2", "joystick-p2");
-  setupJoystick("p3", "joystick-p3");
-  setupJoystick("p4", "joystick-p4");
+  // Inisialisasi 4 Joystick SVG di 4 Sudut
+  setupSvgJoystick("p1", "joystick-p1");
+  setupSvgJoystick("p2", "joystick-p2");
+  setupSvgJoystick("p3", "joystick-p3");
+  setupSvgJoystick("p4", "joystick-p4");
 
-  // Dukungan Keyboard Desktop untuk Pengujian Mudah
+  // Keyboard Desktop Fallback
   const keysDown = {};
   window.addEventListener("keydown", (e) => {
     keysDown[e.key.toLowerCase()] = true;
-    updateKeyboardInputs();
+    syncKeyboard();
   });
 
   window.addEventListener("keyup", (e) => {
     delete keysDown[e.key.toLowerCase()];
-    updateKeyboardInputs();
+    syncKeyboard();
   });
 
-  function updateKeyboardInputs() {
+  function syncKeyboard() {
     // P1: WASD
-    let p1X = 0;
-    let p1Y = 0;
-    if (keysDown["a"]) p1X -= 1;
-    if (keysDown["d"]) p1X += 1;
-    if (keysDown["w"]) p1Y -= 1;
-    if (keysDown["s"]) p1Y += 1;
-    if (p1X !== 0 || p1Y !== 0 || (!keysDown["a"] && !keysDown["d"] && !keysDown["w"] && !keysDown["s"])) {
-      if (PLAYERS.p1.inputX === 0 && PLAYERS.p1.inputY === 0) {
-        PLAYERS.p1.inputX = p1X;
-        PLAYERS.p1.inputY = p1Y;
+    let p1x = 0, p1y = 0;
+    if (keysDown["a"]) p1x -= 1;
+    if (keysDown["d"]) p1x += 1;
+    if (keysDown["w"]) p1y -= 1;
+    if (keysDown["s"]) p1y += 1;
+    if (p1x !== 0 || p1y !== 0 || (!keysDown["a"] && !keysDown["d"] && !keysDown["w"] && !keysDown["s"])) {
+      if (!activeTouchMapCountFor("p1")) {
+        PLAYERS.p1.inputX = p1x;
+        PLAYERS.p1.inputY = p1y;
       }
     }
 
     // P2: Panah (Arrow Keys)
-    let p2X = 0;
-    let p2Y = 0;
-    if (keysDown["arrowleft"]) p2X -= 1;
-    if (keysDown["arrowright"]) p2X += 1;
-    if (keysDown["arrowup"]) p2Y -= 1;
-    if (keysDown["arrowdown"]) p2Y += 1;
-    if (p2X !== 0 || p2Y !== 0 || (!keysDown["arrowleft"] && !keysDown["arrowright"] && !keysDown["arrowup"] && !keysDown["arrowdown"])) {
-      if (PLAYERS.p2.inputX === 0 && PLAYERS.p2.inputY === 0) {
-        PLAYERS.p2.inputX = p2X;
-        PLAYERS.p2.inputY = p2Y;
+    let p2x = 0, p2y = 0;
+    if (keysDown["arrowleft"]) p2x -= 1;
+    if (keysDown["arrowright"]) p2x += 1;
+    if (keysDown["arrowup"]) p2y -= 1;
+    if (keysDown["arrowdown"]) p2y += 1;
+    if (p2x !== 0 || p2y !== 0 || (!keysDown["arrowleft"] && !keysDown["arrowright"] && !keysDown["arrowup"] && !keysDown["arrowdown"])) {
+      if (!activeTouchMapCountFor("p2")) {
+        PLAYERS.p2.inputX = p2x;
+        PLAYERS.p2.inputY = p2y;
       }
     }
 
     // P3: IJKL
-    let p3X = 0;
-    let p3Y = 0;
-    if (keysDown["j"]) p3X -= 1;
-    if (keysDown["l"]) p3X += 1;
-    if (keysDown["i"]) p3Y -= 1;
-    if (keysDown["k"]) p3Y += 1;
-    if (p3X !== 0 || p3Y !== 0 || (!keysDown["j"] && !keysDown["l"] && !keysDown["i"] && !keysDown["k"])) {
-      if (PLAYERS.p3.inputX === 0 && PLAYERS.p3.inputY === 0) {
-        PLAYERS.p3.inputX = p3X;
-        PLAYERS.p3.inputY = p3Y;
+    let p3x = 0, p3y = 0;
+    if (keysDown["j"]) p3x -= 1;
+    if (keysDown["l"]) p3x += 1;
+    if (keysDown["i"]) p3y -= 1;
+    if (keysDown["k"]) p3y += 1;
+    if (p3x !== 0 || p3y !== 0 || (!keysDown["j"] && !keysDown["l"] && !keysDown["i"] && !keysDown["k"])) {
+      if (!activeTouchMapCountFor("p3")) {
+        PLAYERS.p3.inputX = p3x;
+        PLAYERS.p3.inputY = p3y;
       }
     }
 
     // P4: TFGH
-    let p4X = 0;
-    let p4Y = 0;
-    if (keysDown["f"]) p4X -= 1;
-    if (keysDown["h"]) p4X += 1;
-    if (keysDown["t"]) p4Y -= 1;
-    if (keysDown["g"]) p4Y += 1;
-    if (p4X !== 0 || p4Y !== 0 || (!keysDown["f"] && !keysDown["h"] && !keysDown["t"] && !keysDown["g"])) {
-      if (PLAYERS.p4.inputX === 0 && PLAYERS.p4.inputY === 0) {
-        PLAYERS.p4.inputX = p4X;
-        PLAYERS.p4.inputY = p4Y;
+    let p4x = 0, p4y = 0;
+    if (keysDown["f"]) p4x -= 1;
+    if (keysDown["h"]) p4x += 1;
+    if (keysDown["t"]) p4y -= 1;
+    if (keysDown["g"]) p4y += 1;
+    if (p4x !== 0 || p4y !== 0 || (!keysDown["f"] && !keysDown["h"] && !keysDown["t"] && !keysDown["g"])) {
+      if (!activeTouchMapCountFor("p4")) {
+        PLAYERS.p4.inputX = p4x;
+        PLAYERS.p4.inputY = p4y;
       }
     }
+  }
+
+  function activeTouchMapCountFor(playerKey) {
+    return Object.values(activeTouchMap).some((item) => item.playerKey === playerKey);
   }
 
   // 7. Transisi Layar
@@ -387,16 +500,18 @@ document.addEventListener("DOMContentLoaded", () => {
     gameplayView.classList.remove("hidden");
     gameplayView.classList.add("active");
 
-    resizeCanvas();
-    resetPlayerPositions();
+    initThree();
+    handleResize();
+    resetAllPlayers();
 
-    isGameActive = true;
+    isGameRunning = true;
+    clock.start();
     cancelAnimationFrame(animationFrameId);
-    animationFrameId = requestAnimationFrame(gameLoop);
+    animationFrameId = requestAnimationFrame(tick);
   }
 
   function exitToPlayerSelect() {
-    isGameActive = false;
+    isGameRunning = false;
     cancelAnimationFrame(animationFrameId);
 
     gameplayView.classList.remove("active");
@@ -406,14 +521,14 @@ document.addEventListener("DOMContentLoaded", () => {
     playerSelectView.classList.add("active");
   }
 
-  // Event Listeners Navigasi
+  // Event Listeners Navigasi (Relatif agar kompatibel dengan GitHub Pages)
   if (btnMode4P) {
     btnMode4P.addEventListener("click", start4PGame);
   }
 
   if (btnBackToMain) {
     btnBackToMain.addEventListener("click", () => {
-      window.location.href = "/index.html";
+      window.location.href = "../../index.html";
     });
   }
 
@@ -422,10 +537,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (btnResetPositions) {
-    btnResetPositions.addEventListener("click", resetPlayerPositions);
+    btnResetPositions.addEventListener("click", resetAllPlayers);
   }
 
-  window.addEventListener("resize", () => {
-    resizeCanvas();
-  });
+  window.addEventListener("resize", handleResize);
 });

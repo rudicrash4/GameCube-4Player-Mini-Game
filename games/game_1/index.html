@@ -10,28 +10,29 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <!-- 1. MENU PILIHAN PEMAIN (Player Selection Menu) -->
+    <!-- 1. MENU PILIHAN PEMAIN (Player Selection Menu - Portrait Minimalis) -->
     <section id="player-select-view" class="view active">
       <div class="player-select-card">
         <h1 class="select-title">PILIH JUMLAH PEMAIN</h1>
-        <p class="select-subtitle">Game 1: 4-Player Arena Battle</p>
+        <p class="select-subtitle">Game 1: 3D Cube Arena</p>
 
+        <!-- Kotak Sederhana Minimalis Warna Solid -->
         <div class="player-buttons-grid">
           <button type="button" class="btn-player btn-disabled" data-players="1" disabled>
             <span class="player-num">1P</span>
-            <span class="player-status">Segera Hadir</span>
+            <span class="player-status">Belum Tersedia</span>
           </button>
           <button type="button" class="btn-player btn-disabled" data-players="2" disabled>
             <span class="player-num">2P</span>
-            <span class="player-status">Segera Hadir</span>
+            <span class="player-status">Belum Tersedia</span>
           </button>
           <button type="button" class="btn-player btn-disabled" data-players="3" disabled>
             <span class="player-num">3P</span>
-            <span class="player-status">Segera Hadir</span>
+            <span class="player-status">Belum Tersedia</span>
           </button>
           <button type="button" id="btn-mode-4p" class="btn-player btn-active-4p" data-players="4">
             <span class="player-num">4P</span>
-            <span class="player-status">Main Sekarang</span>
+            <span class="player-status">Mulai</span>
           </button>
         </div>
 
@@ -41,56 +42,61 @@
       </div>
     </section>
 
-    <!-- 2. ARENA GAMEPLAY (4 Players & 4 Corner Joysticks) -->
+    <!-- 2. ARENA GAMEPLAY 3D (Area Landscape di dalam Layar Portrait) -->
     <section id="gameplay-view" class="view hidden">
-      <!-- Game Canvas untuk 4 Pemain -->
-      <canvas id="game-canvas"></canvas>
-
-      <!-- Bar Kontrol Atas Arena -->
-      <div class="game-hud-top">
-        <button type="button" id="btn-exit-game" class="hud-btn">
-          &larr; Pilih Pemain
-        </button>
-        <div class="game-hud-title">4P ARENA</div>
-        <button type="button" id="btn-reset-positions" class="hud-btn">
-          Reset Posisi
-        </button>
-      </div>
-
-      <!-- 4 BUAH JOYSTICK DI 4 SUDUT LAYAR -->
-      <!-- Sudut Kiri-Atas: Player 3 (Hijau) -->
-      <div id="joystick-p3" class="joystick-zone top-left p3-theme" data-player="p3">
-        <div class="joystick-label">P3</div>
-        <div class="joystick-base">
-          <div class="joystick-knob"></div>
+      <div class="landscape-game-wrapper">
+        <!-- Top Bar Navigasi Arena -->
+        <div class="game-hud-top">
+          <button type="button" id="btn-exit-game" class="hud-btn">
+            &larr; Pilih Pemain
+          </button>
+          <div class="game-hud-title">4P 3D ARENA</div>
+          <button type="button" id="btn-reset-positions" class="hud-btn">
+            Reset
+          </button>
         </div>
-      </div>
 
-      <!-- Sudut Kanan-Atas: Player 4 (Kuning) -->
-      <div id="joystick-p4" class="joystick-zone top-right p4-theme" data-player="p4">
-        <div class="joystick-label">P4</div>
-        <div class="joystick-base">
-          <div class="joystick-knob"></div>
-        </div>
-      </div>
+        <!-- Area Gameplay Landscape -->
+        <div id="landscape-stage" class="landscape-stage">
+          <!-- WebGL Three.js Container -->
+          <div id="three-container"></div>
 
-      <!-- Sudut Kiri-Bawah: Player 1 (Merah) -->
-      <div id="joystick-p1" class="joystick-zone bottom-left p1-theme" data-player="p1">
-        <div class="joystick-label">P1</div>
-        <div class="joystick-base">
-          <div class="joystick-knob"></div>
-        </div>
-      </div>
+          <!-- 4 BUAH SVG JOYSTICK DI 4 SUDUT AREA GAMEPLAY LANDSCAPE -->
+          <!-- Sudut Kiri-Atas: Player 3 (Hijau #22c55e) -->
+          <div id="joystick-p3" class="joystick-zone top-left" data-player="p3">
+            <svg class="joystick-svg" viewBox="0 0 100 100">
+              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#22c55e" fill-opacity="0.2" stroke="#22c55e" stroke-width="2.5" />
+              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#22c55e" fill-opacity="0.85" />
+            </svg>
+          </div>
 
-      <!-- Sudut Kanan-Bawah: Player 2 (Biru) -->
-      <div id="joystick-p2" class="joystick-zone bottom-right p2-theme" data-player="p2">
-        <div class="joystick-label">P2</div>
-        <div class="joystick-base">
-          <div class="joystick-knob"></div>
+          <!-- Sudut Kanan-Atas: Player 4 (Kuning #eab308) -->
+          <div id="joystick-p4" class="joystick-zone top-right" data-player="p4">
+            <svg class="joystick-svg" viewBox="0 0 100 100">
+              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#eab308" fill-opacity="0.2" stroke="#eab308" stroke-width="2.5" />
+              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#eab308" fill-opacity="0.85" />
+            </svg>
+          </div>
+
+          <!-- Sudut Kiri-Bawah: Player 1 (Merah #ef4444) -->
+          <div id="joystick-p1" class="joystick-zone bottom-left" data-player="p1">
+            <svg class="joystick-svg" viewBox="0 0 100 100">
+              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444" stroke-width="2.5" />
+              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#ef4444" fill-opacity="0.85" />
+            </svg>
+          </div>
+
+          <!-- Sudut Kanan-Bawah: Player 2 (Biru #3b82f6) -->
+          <div id="joystick-p2" class="joystick-zone bottom-right" data-player="p2">
+            <svg class="joystick-svg" viewBox="0 0 100 100">
+              <circle class="joy-outer" cx="50" cy="50" r="46" fill="#3b82f6" fill-opacity="0.2" stroke="#3b82f6" stroke-width="2.5" />
+              <circle class="joy-inner" cx="50" cy="50" r="22" fill="#3b82f6" fill-opacity="0.85" />
+            </svg>
+          </div>
         </div>
       </div>
     </section>
 
-    <script src="./script.js"></script>
+    <script type="module" src="./script.js"></script>
   </body>
 </html>

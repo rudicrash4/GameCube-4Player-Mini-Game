@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GameCube 4Player Mini Game - Root Stylesheet (v0.0.2)
+   GameCube 4Player Mini Game - Root Stylesheet (v0.0.3 Portrait)
    ========================================================================== */
 
 :root {
@@ -19,9 +19,9 @@
   --ctrl-bg: rgba(255, 255, 255, 0.08);
   --ctrl-hover: rgba(255, 255, 255, 0.16);
 
-  /* Dimensi & Layout */
-  --grid-gap: 16px;
-  --container-padding: 20px;
+  /* Dimensi & Layout Portrait */
+  --grid-gap: 14px;
+  --container-padding: 16px;
 }
 
 /* Reset CSS & Fullscreen Layout */
@@ -70,34 +70,36 @@ body {
 }
 
 /* ==========================================================================
-   1. HALAMAN AWAL (Initial Page)
+   1. HALAMAN AWAL (Initial Page - Portrait)
    ========================================================================== */
 #initial-screen {
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   position: relative;
+  padding: 20px;
 }
 
-/* Tombol Kontrol Atas (Rotasi & Fullscreen) */
+/* Tombol Kontrol Atas (Fullscreen) */
 .top-controls {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   z-index: 10;
 }
 
 .ctrl-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background-color: var(--ctrl-bg);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #e2e8f0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
@@ -105,7 +107,6 @@ body {
 
 .ctrl-btn:hover {
   background-color: var(--ctrl-hover);
-  transform: translateY(-1px);
 }
 
 .ctrl-btn:active {
@@ -119,21 +120,21 @@ body {
   outline: none;
   background-color: var(--btn-bg);
   color: var(--btn-text);
-  font-size: clamp(1.1rem, 2.5vw, 1.8rem);
-  font-weight: 700;
+  font-size: clamp(1.2rem, 5vw, 1.8rem);
+  font-weight: 800;
   letter-spacing: 0.12em;
-  padding: clamp(14px, 2.2vh, 24px) clamp(36px, 5vw, 64px);
-  border-radius: 8px;
+  padding: clamp(16px, 3vh, 24px) clamp(36px, 10vw, 64px);
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   transition: transform 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   touch-action: manipulation;
 }
 
 .btn-permainan:hover {
   background-color: var(--btn-bg-hover);
-  transform: scale(1.03);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  transform: scale(1.02);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
 }
 
 .btn-permainan:active {
@@ -143,7 +144,7 @@ body {
 }
 
 /* ==========================================================================
-   2. MENU GAME (Game Menu Page)
+   2. MENU GAME (Game Menu Page - Portrait Friendly)
    ========================================================================== */
 #game-menu-screen {
   flex-direction: column;
@@ -152,18 +153,26 @@ body {
 .menu-top-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 14px var(--container-padding);
-  background-color: rgba(15, 13, 24, 0.8);
+  background-color: rgba(15, 13, 24, 0.9);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.menu-header-title {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .btn-back {
   background-color: var(--ctrl-bg);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -184,7 +193,7 @@ body {
 }
 
 .menu-scroll-container::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 .menu-scroll-container::-webkit-scrollbar-track {
@@ -193,25 +202,43 @@ body {
 
 .menu-scroll-container::-webkit-scrollbar-thumb {
   background-color: #3b325c;
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
-/* Grid Layout: 5 kotak dalam satu baris */
+/* Grid Layout: Responsif Portrait (2-3 kolom di mobile, hingga 5 kolom di layar lebar) */
 .game-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--grid-gap);
   width: 100%;
-  max-width: 1920px;
+  max-width: 900px;
   margin: 0 auto;
-  padding-bottom: 30px;
+  padding-bottom: 40px;
+}
+
+@media (min-width: 480px) {
+  .game-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .game-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .game-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 /* Kotak Game Solid */
 .game-box {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1 / 1;
   background-color: var(--box-bg-1);
   border: 2px solid var(--box-border);
   border-radius: 8px;
@@ -247,7 +274,6 @@ body {
 .game-box.game-1-slot {
   background-color: var(--box-game1);
   border-color: #8b5cf6;
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
 }
 
 .game-box.game-1-slot:hover {
@@ -257,40 +283,8 @@ body {
 
 .game-slot-title {
   color: #ffffff;
-  font-weight: 700;
-  font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 3.5vw, 1.25rem);
   letter-spacing: 0.05em;
   pointer-events: none;
-}
-
-/* Simulasi Rotasi Layar jika dibutuhkan */
-body.simulated-landscape {
-  transform: rotate(90deg);
-  transform-origin: top left;
-  position: absolute;
-  top: 0;
-  left: 100vw;
-  width: 100vh !important;
-  height: 100vw !important;
-}
-
-/* Responsif Mobile Landscape */
-@media (max-width: 900px) {
-  :root {
-    --grid-gap: 12px;
-    --container-padding: 14px;
-  }
-}
-
-@media (max-width: 600px) {
-  :root {
-    --grid-gap: 8px;
-    --container-padding: 10px;
-  }
-  .ctrl-btn span {
-    display: none;
-  }
-  .ctrl-btn {
-    padding: 8px;
-  }
 }

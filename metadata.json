@@ -1,6 +1,6 @@
 {
   "name": "GameCube 4Player Mini Game",
-  "description": "Template web HTML5 GameCube 4Player Mini Game versi 0.0.3 dengan orientasi portrait dan arena gameplay 3D Three.js 16x16 block.",
+  "description": "Template web HTML5 GameCube 4Player Mini Game versi 0.0.5 dengan orientasi portrait, arena 3D Three.js 6x10 block putih teroptimasi, pencahayaan bayangan 70°, dan kontrol multi-touch lancar.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

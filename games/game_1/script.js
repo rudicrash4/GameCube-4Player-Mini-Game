@@ -1,11 +1,12 @@
 /**
  * ==========================================================================
- * Game 1 - 3D Cube Arena 10×16 (White Blocks) & Fullscreen Portrait (v0.0.3)
+ * Game 1 - 3D Cube Arena 6×10 (White Blocks) & Fullscreen Portrait (v0.0.5)
  * - Canvas Fullscreen Memenuhi Layar
- * - Arena 10×16 Blok Kubus Putih dengan Jarak/Celah Minimal
- * - Panel Air Biru Sangat Diperluas
- * - Kamera 90° Top-Down dengan POV 0.9 Radian
- * - 4 Joystick SVG di 4 Pojok Layar Portrait
+ * - Arena 6×10 Blok Kubus Putih dengan Jarak/Celah Minimal
+ * - Pencahayaan Bayangan Realistis 70° Teroptimasi (PCFShadowMap 1024)
+ * - Kamera 90° Top-Down dengan Margin Blok ke Tepi Layar ~10%
+ * - Zero-Allocation Animation Solver & Penghapusan Layout Reflow Touch
+ * - 4 Joystick SVG di 4 Pojok Layar Portrait & Menu Pause SVG
  * ==========================================================================
  */
 
@@ -28,62 +29,62 @@ function startApp() {
   // State Jeda Game
   let isGamePaused = false;
 
-  // 2. Dimensi Arena 10 × 16 & Fisika
-  const ARENA_COLS = 10; // Sumbu X (Lebar = 10 kolom)
-  const ARENA_ROWS = 16; // Sumbu Z (Panjang = 16 baris)
+  // 2. Dimensi Arena 6 × 10 & Fisika
+  const ARENA_COLS = 6;  // Sumbu X (Lebar = 6 kolom)
+  const ARENA_ROWS = 10; // Sumbu Z (Panjang = 10 baris)
   const SPACING = 1.0;
   const BLOCK_SIZE = 0.96; // Jarak/celah antarblock diperkecil (0.04)
   const BLOCK_HEIGHT = 0.55;
 
-  const HALF_SPAN_X = ((ARENA_COLS - 1) * SPACING) / 2; // 4.5
-  const HALF_SPAN_Z = ((ARENA_ROWS - 1) * SPACING) / 2; // 7.5
+  const HALF_SPAN_X = ((ARENA_COLS - 1) * SPACING) / 2; // 2.5
+  const HALF_SPAN_Z = ((ARENA_ROWS - 1) * SPACING) / 2; // 4.5
 
-  const ARENA_BOUND_X = HALF_SPAN_X - 0.1; // 4.4
-  const ARENA_BOUND_Z = HALF_SPAN_Z - 0.1; // 7.4
+  const ARENA_BOUND_X = HALF_SPAN_X - 0.1; // 2.4
+  const ARENA_BOUND_Z = HALF_SPAN_Z - 0.1; // 4.4
 
   // Posisi kaki karakter tepat menapak di permukaan balok lantai (Y = 0.275)
   const PLAYER_Y = BLOCK_HEIGHT / 2;
 
-  // 3. Konfigurasi 4 Pemain pada 4 Sudut Arena 10 × 16
+  // 3. Konfigurasi 4 Pemain pada 4 Sudut Arena 6 × 10
   const PLAYERS = {
     p1: {
       id: "p1",
       name: "P1",
       color: 0xef4444, // Merah (#ef4444)
-      startPos: [-HALF_SPAN_X + 0.5, PLAYER_Y, HALF_SPAN_Z - 0.5], // Sudut Kiri-Bawah (X: -4.0, Z: +7.0)
+      startPos: [-HALF_SPAN_X + 0.5, PLAYER_Y, HALF_SPAN_Z - 0.5], // Sudut Kiri-Bawah (X: -2.0, Z: +4.0)
       inputX: 0,
       inputY: 0,
-      speed: 8.5,
+      speed: 3.8, // Kecepatan nyaman dan terkendali
       character: null,
     },
     p2: {
       id: "p2",
       name: "P2",
       color: 0x3b82f6, // Biru (#3b82f6)
-      startPos: [HALF_SPAN_X - 0.5, PLAYER_Y, HALF_SPAN_Z - 0.5], // Sudut Kanan-Bawah (X: +4.0, Z: +7.0)
+      startPos: [HALF_SPAN_X - 0.5, PLAYER_Y, HALF_SPAN_Z - 0.5], // Sudut Kanan-Bawah (X: +2.0, Z: +4.0)
       inputX: 0,
       inputY: 0,
-      speed: 8.5,
+      speed: 3.8,
       character: null,
     },
     p3: {
       id: "p3",
       name: "P3",
       color: 0x22c55e, // Hijau (#22c55e)
-      startPos: [-HALF_SPAN_X + 0.5, PLAYER_Y, -HALF_SPAN_Z + 0.5], // Sudut Kiri-Atas (X: -4.0, Z: -7.0)
+      startPos: [-HALF_SPAN_X + 0.5, PLAYER_Y, -HALF_SPAN_Z + 0.5], // Sudut Kiri-Atas (X: -2.0, Z: -4.0)
       inputX: 0,
       inputY: 0,
-      speed: 8.5,
+      speed: 3.8,
       character: null,
     },
     p4: {
       id: "p4",
       name: "P4",
       color: 0xeab308, // Kuning (#eab308)
-      startPos: [HALF_SPAN_X - 0.5, PLAYER_Y, -HALF_SPAN_Z + 0.5], // Sudut Kanan-Atas (X: +4.0, Z: -7.0)
+      startPos: [HALF_SPAN_X - 0.5, PLAYER_Y, -HALF_SPAN_Z + 0.5], // Sudut Kanan-Atas (X: +2.0, Z: -4.0)
       inputX: 0,
       inputY: 0,
-      speed: 8.5,
+      speed: 3.8,
       character: null,
     },
   };
@@ -112,19 +113,23 @@ function startApp() {
 
     updateCameraToFitArena();
 
-    // C. Renderer Fullscreen Memenuhi Layar
+    // C. Renderer Fullscreen Teroptimasi Tinggi
     renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: "high-performance",
+      precision: "mediump", // Performa tinggi di mobile tanpa kehilangan ketajaman visual
     });
     renderer.setSize(initialWidth, initialHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Batasi pixel ratio ke 1.5 untuk mencegah GPU fill-rate throttling di layar ponsel resolusi tinggi
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap; // Jauh lebih ringan & lancar dibanding PCFSoftShadowMap
     threeContainer.appendChild(renderer.domElement);
 
-    // D. Sistem Pencahayaan Multi-Arah
+    // D. Sistem Pencahayaan Multi-Arah dengan Bayangan 70° Teroptimasi
     setupLighting();
 
-    // E. Arena 3D: Lantai 10 × 16 Block Cube Berwarna Putih
+    // E. Arena 3D: Lantai 6 × 10 Block Cube Berwarna Putih
     createArenaBlocks();
 
     // F. Panel Besar Biru di Bawah Seluruh Arena (Air Diperluas)
@@ -136,7 +141,7 @@ function startApp() {
 
   /**
    * Menghitung posisi kamera 90° tegak lurus ke bawah tepat di tengah (0, 0, 0),
-   * memastikan SELURUH 10 × 16 block cube putih masuk frame di layar mode portrait.
+   * memastikan jarak dari sisi block samping ke tepi layar kamera adalah berkisar 10% (arena 6 kolom mengisi 80% lebar layar).
    */
   function updateCameraToFitArena() {
     if (!camera) return;
@@ -148,18 +153,20 @@ function startApp() {
     camera.fov = (0.9 * 180) / Math.PI; // 0.9 radian
     camera.zoom = 0.9;
 
-    // Bentang arena 10 × 16 dengan padding yang pas
-    const arenaSpanZ = ARENA_ROWS * SPACING + 0.8;
-    const arenaSpanX = ARENA_COLS * SPACING + 0.8;
+    // Lebar arena 6 kolom = 6.0 unit.
+    // Agar jarak tepi blok ke sisi layar berkisar 10% di kiri dan 10% di kanan:
+    // Blok mengisi 80% lebar layar -> target visible width = 6.0 / 0.80 = 7.5 unit
+    const targetWidth = 6.0 / 0.80;  // 7.5 unit (margin kiri 10%, margin kanan 10%)
+    const targetHeight = 10.0 / 0.80; // 12.5 unit (untuk arena 10 baris)
 
     const halfFovRad = 0.45; // 0.9 / 2 radian
     const tanHalfFov = Math.tan(halfFovRad);
 
-    const distYVertical = arenaSpanZ / (2 * tanHalfFov * camera.zoom);
-    const distYHorizontal = arenaSpanX / (2 * tanHalfFov * camera.zoom * aspect);
+    const distYHorizontal = (targetWidth * camera.zoom) / (2 * tanHalfFov * aspect);
+    const distYVertical = (targetHeight * camera.zoom) / (2 * tanHalfFov);
 
-    // Ketinggian kamera diturunkan sedikit (~16%) agar block cube terlihat agak luas & dekat
-    const optimalY = Math.max(distYVertical, distYHorizontal, 24.0) * 0.84;
+    // Ketinggian kamera optimal memastikan jarak dari sisi blok samping berkisar 10% ke tepi layar
+    const optimalY = Math.max(distYHorizontal, distYVertical);
 
     camera.position.set(0, optimalY, 0);
 
@@ -171,36 +178,41 @@ function startApp() {
   }
 
   /**
-   * Pencahayaan Tajam untuk Memunculkan Tepi Balok Kubus Putih
+   * Pencahayaan dengan Bayangan Nyata pada Sudut 70° (Shadow Light 70° Teroptimasi)
    */
   function setupLighting() {
     // 1. Hemisphere Light (Cahaya Langit & Pantulan Air Biru)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x0284c7, 1.4);
-    hemiLight.position.set(0, 40, 0);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x0284c7, 1.25);
+    hemiLight.position.set(0, 30, 0);
     scene.add(hemiLight);
 
-    // 2. Key Light dari Kanan-Bawah untuk Bayangan Celah Kubus
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    keyLight.position.set(16, 32, 16);
-    scene.add(keyLight);
+    // 2. Key Light 70° dengan Bayangan Tajam Lembut (Light 70°)
+    // tan(70°) ≈ 2.7475. Y = 18.0 -> horizontal = 6.55 (X = 3.5, Z = 5.5 -> hypot = 6.519)
+    // Sudut elevasi: atan2(18.0, 6.519) * 180 / PI = 70.08°
+    const shadowLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    shadowLight.position.set(3.5, 18.0, 5.5);
+    shadowLight.castShadow = true;
+    // 1024x1024 adalah resolusi bayangan sangat tajam & ringan di perangkat mobile
+    shadowLight.shadow.mapSize.width = 1024;
+    shadowLight.shadow.mapSize.height = 1024;
+    shadowLight.shadow.camera.near = 1.0;
+    shadowLight.shadow.camera.far = 35;
+    // Frustum presisi membungkus arena 6 × 10
+    shadowLight.shadow.camera.left = -5.0;
+    shadowLight.shadow.camera.right = 5.0;
+    shadowLight.shadow.camera.top = 7.5;
+    shadowLight.shadow.camera.bottom = -7.5;
+    shadowLight.shadow.bias = -0.0005;
+    shadowLight.shadow.normalBias = 0.02;
+    scene.add(shadowLight);
 
-    // 3. Fill Light dari Kiri-Atas
-    const fillLight = new THREE.DirectionalLight(0xdbeafe, 1.3);
-    fillLight.position.set(-16, 28, -16);
+    // 3. Fill Light Halus dari Arah Berlawanan
+    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.7);
+    fillLight.position.set(-10, 15, -10);
     scene.add(fillLight);
-
-    // 4. Accent Light dari Sisi Depan
-    const accentLight = new THREE.DirectionalLight(0xf1f5f9, 1.0);
-    accentLight.position.set(0, 25, 20);
-    scene.add(accentLight);
-
-    // 5. Point Light Sentral di Atas Arena
-    const centerLight = new THREE.PointLight(0xffffff, 0.8, 50);
-    centerLight.position.set(0, 12, 0);
-    scene.add(centerLight);
   }
 
-  // Buat 10 × 16 Block Kubus Berwarna Putih dengan Jarak/Celah Minimal
+  // Buat 6 × 10 Block Kubus Berwarna Putih dengan Jarak/Celah Minimal
   function createArenaBlocks() {
     const blockGeo = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_HEIGHT, BLOCK_SIZE);
 
@@ -211,8 +223,10 @@ function startApp() {
       metalness: 0.08,
     });
 
-    const totalBlocks = ARENA_COLS * ARENA_ROWS; // 160 Blok
+    const totalBlocks = ARENA_COLS * ARENA_ROWS; // 60 Blok (6 × 10)
     const instancedArena = new THREE.InstancedMesh(blockGeo, blockMat, totalBlocks);
+    instancedArena.castShadow = true;
+    instancedArena.receiveShadow = true;
     const dummy = new THREE.Object3D();
 
     let index = 0;
@@ -232,7 +246,7 @@ function startApp() {
 
   // Panel Besar Biru di Bawah Seluruh Arena (Air Diperluas)
   function createWaterPanel() {
-    // Diperluas hingga 85 × 110 unit agar air membentang luas di luar arena 10×16
+    // Diperluas hingga 85 × 110 unit agar air membentang luas di luar arena 6×10
     const waterGeo = new THREE.BoxGeometry(85, 0.6, 110);
     const waterMat = new THREE.MeshStandardMaterial({
       color: 0x0284c7, // Biru Air Segar Solid
@@ -241,6 +255,7 @@ function startApp() {
     });
     const water = new THREE.Mesh(waterGeo, waterMat);
     water.position.set(0, -0.65, 0);
+    water.receiveShadow = true;
     scene.add(water);
   }
 
@@ -278,6 +293,7 @@ function startApp() {
 
     renderer.setSize(width, height);
     updateCameraToFitArena();
+    refreshAllJoystickMetrics();
   }
 
   // 5. Game Loop Three.js
@@ -305,33 +321,52 @@ function startApp() {
     animationFrameId = requestAnimationFrame(tick);
   }
 
-  // 6. Sistem Kontrol Virtual Joystick SVG di 4 Pojok Layar (Multi-Touch Simultan)
+  // 6. Sistem Kontrol Virtual Joystick SVG di 4 Pojok Layar (Multi-Touch Simultan Bebas Reflow)
   const activeTouchMap = {}; // touch.identifier -> { updateFn, resetFn }
+  const joystickMetrics = {};
+
+  function refreshJoystickMetrics(playerKey, zone) {
+    if (!zone) return;
+    const rect = zone.getBoundingClientRect();
+    joystickMetrics[playerKey] = {
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2,
+      maxRadius: rect.width * 0.36,
+    };
+  }
+
+  function refreshAllJoystickMetrics() {
+    ["p1", "p2", "p3", "p4"].forEach((key) => {
+      const z = document.getElementById(`joystick-${key}`);
+      if (z) refreshJoystickMetrics(key, z);
+    });
+  }
 
   function setupSvgJoystick(playerKey, elementId) {
     const zone = document.getElementById(elementId);
     if (!zone) return;
 
     const knob = zone.querySelector(".joy-inner");
+    refreshJoystickMetrics(playerKey, zone);
 
     function updateKnob(clientX, clientY) {
       if (isGamePaused) return;
-      const rect = zone.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const m = joystickMetrics[playerKey];
+      if (!m) return;
 
-      let dx = clientX - centerX;
-      let dy = clientY - centerY;
+      let dx = clientX - m.centerX;
+      let dy = clientY - m.centerY;
       const dist = Math.hypot(dx, dy);
-      const maxRadius = rect.width * 0.36;
+      const maxRadius = m.maxRadius;
 
       if (dist > maxRadius) {
-        dx = (dx / dist) * maxRadius;
-        dy = (dy / dist) * maxRadius;
+        const inv = maxRadius / dist;
+        dx *= inv;
+        dy *= inv;
       }
 
-      // Transform knob SVG secara langsung
-      knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      // Transform knob SVG menggunakan GPU compositor (translate3d)
+      knob.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
 
       // Normalisasi input (-1 hingga 1)
       PLAYERS[playerKey].inputX = dx / maxRadius;
@@ -339,16 +374,21 @@ function startApp() {
     }
 
     function resetKnob() {
-      knob.style.transform = "translate(0px, 0px)";
+      knob.classList.add("releasing");
+      knob.style.transform = "translate3d(0px, 0px, 0)";
+      setTimeout(() => {
+        knob.classList.remove("releasing");
+      }, 160);
       PLAYERS[playerKey].inputX = 0;
       PLAYERS[playerKey].inputY = 0;
     }
 
-    // Touch Event Handling
+    // Touch Event Handling dengan metrik ter-cache (Mencegah patah-patah reflow di mobile)
     zone.addEventListener(
       "touchstart",
       (e) => {
         e.preventDefault();
+        refreshJoystickMetrics(playerKey, zone);
         for (let i = 0; i < e.changedTouches.length; i++) {
           const t = e.changedTouches[i];
           activeTouchMap[t.identifier] = {
@@ -365,6 +405,7 @@ function startApp() {
     let isMouseDown = false;
     zone.addEventListener("mousedown", (e) => {
       isMouseDown = true;
+      refreshJoystickMetrics(playerKey, zone);
       updateKnob(e.clientX, e.clientY);
 
       function onMouseMove(me) {
@@ -384,7 +425,7 @@ function startApp() {
     });
   }
 
-  // Global Touch Listeners untuk Multi-Touch 4 Pemain Simultan
+  // Global Touch Listeners untuk Multi-Touch 4 Pemain Simultan (Bebas Reflow)
   window.addEventListener(
     "touchmove",
     (e) => {

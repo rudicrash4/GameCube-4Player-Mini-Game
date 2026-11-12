@@ -311,5 +311,9 @@ body {
 
 .joy-inner {
   pointer-events: none;
-  transition: transform 0.04s ease-out;
+  will-change: transform;
+}
+
+.joy-inner.releasing {
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }

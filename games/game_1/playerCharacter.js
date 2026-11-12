@@ -13,9 +13,8 @@
 import * as THREE from "three";
 import { modelJson, animIdleJson, animMoveJson } from "./playerAssets.js";
 
-// Skala model (34 unit Bedrock * 0.04 = 1.36 unit Three.js)
-// Sesuai perintah: tidak terlalu kecil seperti balok datar, tidak terlalu besar dari cube
-export const MODEL_SCALE = 0.04;
+// Skala model diperbesar agar karakter terlihat jelas, besar dan proporsional di arena 10×6
+export const MODEL_SCALE = 0.065;
 const DEG2RAD = Math.PI / 180;
 
 /**
@@ -37,7 +36,7 @@ function lerpAngle(from, to, t) {
 
 /**
  * Menghasilkan Texture Canvas 64x64 pixel art tajam untuk setiap pemain
- * Berdasarkan palet warna pemain (P1 Merah, P2 Biru, P3 Hijau, P4 Kuning)
+ * Seluruh body setiap pemain diwarnai penuh sesuai warna pemain (P1 Merah, P2 Biru, P3 Hijau, P4 Kuning)
  */
 function createPlayerCanvasTexture(primaryHex, darkAccentHex, lightAccentHex) {
   const canvas = document.createElement("canvas");
@@ -49,17 +48,12 @@ function createPlayerCanvasTexture(primaryHex, darkAccentHex, lightAccentHex) {
   // Latar belakang transparan
   ctx.clearRect(0, 0, 64, 64);
 
-  // Palet Warna Standar
+  // Palet Warna: Seluruh tubuh mengenakan seragam warna pemain (primary + aksen)
   const skinTone = "#f7cbab";
-  const skinShadow = "#e5b391";
   const white = "#ffffff";
-  const darkPants = "#181b2a";
-  const darkBoots = "#0f111a";
-  const beltColor = "#1e2235";
-  const buckleColor = "#f1f5f9";
 
   // 1. KEPALA (Head Layer 1: UV [0..32, 0..16])
-  // Rambut bagian atas / samping
+  // Rambut / Helm bagian atas & samping (Warna Pemain Penuh)
   ctx.fillStyle = primaryHex;
   ctx.fillRect(8, 0, 8, 8); // Up (top of head)
   ctx.fillRect(16, 0, 8, 8); // Down (neck)
@@ -73,17 +67,17 @@ function createPlayerCanvasTexture(primaryHex, darkAccentHex, lightAccentHex) {
   ctx.fillStyle = skinTone;
   ctx.fillRect(8, 8, 8, 8);
 
-  // Rambut depan poni
+  // Rambut depan / topi pemain
   ctx.fillStyle = primaryHex;
   ctx.fillRect(8, 8, 8, 2);
   ctx.fillRect(8, 10, 2, 1);
   ctx.fillRect(14, 10, 2, 1);
 
-  // Mata (Kiri & Kanan)
+  // Mata (Kiri & Kanan) dengan pupil warna pemain
   ctx.fillStyle = white;
   ctx.fillRect(9, 12, 2, 1);
   ctx.fillRect(13, 12, 2, 1);
-  ctx.fillStyle = primaryHex; // Pupil warna tema pemain
+  ctx.fillStyle = primaryHex;
   ctx.fillRect(10, 12, 1, 1);
   ctx.fillRect(13, 12, 1, 1);
 
@@ -91,7 +85,7 @@ function createPlayerCanvasTexture(primaryHex, darkAccentHex, lightAccentHex) {
   ctx.fillStyle = "#cf7162";
   ctx.fillRect(11, 14, 2, 1);
 
-  // 2. KEPALA LAYER LUAR (Head Layer 2 Outer / Helm: UV [32..64, 0..16])
+  // 2. KEPALA LAYER LUAR (Head Layer 2 Outer / Helm & Bando: UV [32..64, 0..16])
   ctx.fillStyle = primaryHex;
   ctx.fillRect(40, 0, 8, 8); // Up
   ctx.fillRect(48, 0, 8, 8); // Down
@@ -99,75 +93,94 @@ function createPlayerCanvasTexture(primaryHex, darkAccentHex, lightAccentHex) {
   ctx.fillRect(48, 8, 8, 8); // West
   ctx.fillRect(56, 8, 8, 8); // South
 
-  // Bando / Headband depan
+  // Bando depan aksen pemain
   ctx.fillStyle = darkAccentHex;
   ctx.fillRect(40, 8, 8, 3);
   ctx.fillStyle = lightAccentHex;
   ctx.fillRect(43, 9, 2, 1); // Emblem tengah
 
-  // 3. BADAN (Body Layer 1: UV [16..40, 16..32])
+  // 3. BADAN / TORSO (Body Layer 1: UV [16..40, 16..32]) - WARNA PEMAIN PENUH
   // Baju Depan (North: [20, 20] sampai [28, 32])
   ctx.fillStyle = primaryHex;
   ctx.fillRect(20, 20, 8, 10);
-  // Kerah V-Neck
-  ctx.fillStyle = skinTone;
+  // Kerah
+  ctx.fillStyle = lightAccentHex;
   ctx.fillRect(23, 20, 2, 2);
-  // Sabuk pinggang
-  ctx.fillStyle = beltColor;
+  // Sabuk pinggang aksen pemain
+  ctx.fillStyle = darkAccentHex;
   ctx.fillRect(20, 30, 8, 2);
-  ctx.fillStyle = buckleColor;
-  ctx.fillRect(23, 30, 2, 2);
+  ctx.fillStyle = lightAccentHex;
+  ctx.fillRect(23, 30, 2, 2); // Gesper sabuk
 
   // Baju Belakang (South: [32, 20] sampai [40, 32])
-  ctx.fillStyle = darkAccentHex;
+  ctx.fillStyle = primaryHex;
   ctx.fillRect(32, 20, 8, 10);
-  ctx.fillStyle = beltColor;
+  ctx.fillStyle = darkAccentHex;
   ctx.fillRect(32, 30, 8, 2);
 
   // Sisi Samping Badan (East & West)
-  ctx.fillStyle = primaryHex;
+  ctx.fillStyle = darkAccentHex;
   ctx.fillRect(16, 20, 4, 12);
   ctx.fillRect(28, 20, 4, 12);
+  ctx.fillStyle = primaryHex;
   ctx.fillRect(20, 16, 8, 4); // Bahu atas
 
-  // 4. BADAN LAYER LUAR (Body Layer 2 Outer / Rompi: UV [16..40, 32..48])
+  // 4. BADAN LAYER LUAR (Body Layer 2 Outer / Rompi & Pelindung: UV [16..40, 32..48])
   ctx.fillStyle = darkAccentHex;
-  ctx.fillRect(20, 36, 3, 10); // Rompi kiri
-  ctx.fillRect(25, 36, 3, 10); // Rompi kanan
+  ctx.fillRect(20, 36, 8, 10); // Rompi penuh warna aksen pemain
   ctx.fillStyle = lightAccentHex;
-  ctx.fillRect(20, 45, 8, 1); // Garis aksen bawah
+  ctx.fillRect(22, 38, 4, 4); // Emblem dada terang
+  ctx.fillRect(20, 45, 8, 1); // Garis bawah
 
-  // 5. LENGAN KANAN (Right Arm: UV [40..56, 16..32])
+  // 5. LENGAN KANAN (Right Arm: UV [40..56, 16..32]) - WARNA PEMAIN PENUH
+  // Lengan atas, siku, dan sarung tangan seluruhnya warna pemain
   ctx.fillStyle = primaryHex;
   ctx.fillRect(40, 20, 16, 8); // Lengan baju atas
   ctx.fillRect(44, 16, 4, 4); // Bahu atas
-  ctx.fillStyle = skinTone;
-  ctx.fillRect(40, 28, 16, 4); // Telapak tangan
+  ctx.fillStyle = darkAccentHex;
+  ctx.fillRect(40, 28, 16, 4); // Sarung tangan warna pemain (bukan warna kulit)
 
-  // 6. LENGAN KIRI (Left Arm: UV [32..48, 48..64])
+  // Lengan Kanan Layer Luar (UV [40..56, 32..48])
+  ctx.fillStyle = lightAccentHex;
+  ctx.fillRect(40, 36, 16, 3); // Manset lengan
+
+  // 6. LENGAN KIRI (Left Arm: UV [32..48, 48..64]) - WARNA PEMAIN PENUH
   ctx.fillStyle = primaryHex;
   ctx.fillRect(32, 52, 16, 8); // Lengan baju atas
   ctx.fillRect(36, 48, 4, 4); // Bahu atas
-  ctx.fillStyle = skinTone;
-  ctx.fillRect(32, 60, 16, 4); // Telapak tangan
-
-  // 7. KAKI KANAN (Right Leg: UV [0..16, 16..32])
-  ctx.fillStyle = darkPants;
-  ctx.fillRect(0, 20, 16, 8); // Celana atas
-  ctx.fillRect(4, 16, 4, 4); // Pinggul
-  ctx.fillStyle = darkBoots;
-  ctx.fillRect(0, 28, 16, 4); // Sepatu boot
   ctx.fillStyle = darkAccentHex;
-  ctx.fillRect(4, 28, 4, 1); // Lis sepatu warna pemain
+  ctx.fillRect(32, 60, 16, 4); // Sarung tangan warna pemain
 
-  // 8. KAKI KIRI (Left Leg: UV [16..32, 48..64])
-  ctx.fillStyle = darkPants;
-  ctx.fillRect(16, 52, 16, 8); // Celana atas
-  ctx.fillRect(20, 48, 4, 4); // Pinggul
-  ctx.fillStyle = darkBoots;
-  ctx.fillRect(16, 60, 16, 4); // Sepatu boot
+  // Lengan Kiri Layer Luar (UV [48..64, 48..64])
+  ctx.fillStyle = lightAccentHex;
+  ctx.fillRect(48, 52, 16, 3); // Manset lengan
+
+  // 7. KAKI KANAN (Right Leg: UV [0..16, 16..32]) - WARNA PEMAIN PENUH (Bukan Hitam)
+  // Celana & sepatu boot seluruhnya diwarnai warna tema pemain
+  ctx.fillStyle = primaryHex;
+  ctx.fillRect(0, 20, 16, 8); // Celana paha warna pemain
+  ctx.fillRect(4, 16, 4, 4); // Pinggul atas
   ctx.fillStyle = darkAccentHex;
-  ctx.fillRect(20, 60, 4, 1); // Lis sepatu warna pemain
+  ctx.fillRect(0, 28, 16, 4); // Sepatu boot warna aksen pemain
+  ctx.fillStyle = lightAccentHex;
+  ctx.fillRect(0, 31, 16, 1); // Sol sepatu aksen terang
+
+  // Kaki Kanan Layer Luar (UV [0..16, 32..48])
+  ctx.fillStyle = darkAccentHex;
+  ctx.fillRect(0, 36, 16, 6); // Pelindung lutut aksen pemain
+
+  // 8. KAKI KIRI (Left Leg: UV [16..32, 48..64]) - WARNA PEMAIN PENUH (Bukan Hitam)
+  ctx.fillStyle = primaryHex;
+  ctx.fillRect(16, 52, 16, 8); // Celana paha warna pemain
+  ctx.fillRect(20, 48, 4, 4); // Pinggul atas
+  ctx.fillStyle = darkAccentHex;
+  ctx.fillRect(16, 60, 16, 4); // Sepatu boot warna aksen pemain
+  ctx.fillStyle = lightAccentHex;
+  ctx.fillRect(16, 63, 16, 1); // Sol sepatu aksen terang
+
+  // Kaki Kiri Layer Luar (UV [0..16, 48..64])
+  ctx.fillStyle = darkAccentHex;
+  ctx.fillRect(0, 52, 16, 6); // Pelindung lutut aksen pemain
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.magFilter = THREE.NearestFilter;
@@ -240,134 +253,146 @@ const MOVE_TRACKS = {
 };
 
 /**
- * Evaluasi track keyframe yang sudah di-parse dan diurutkan
+ * Evaluasi track keyframe yang sudah di-parse dan diurutkan tanpa alokasi memori baru
  */
-function evalTrack(track, time) {
-  if (!track || track.length === 0) return [0, 0, 0];
-  if (time <= track[0].time) return track[0].val;
-  if (time >= track[track.length - 1].time) return track[track.length - 1].val;
+function evalTrackOut(track, time, out) {
+  if (!track || track.length === 0) {
+    out[0] = 0; out[1] = 0; out[2] = 0;
+    return out;
+  }
+  const first = track[0];
+  const last = track[track.length - 1];
+  if (time <= first.time) {
+    out[0] = first.val[0]; out[1] = first.val[1]; out[2] = first.val[2];
+    return out;
+  }
+  if (time >= last.time) {
+    out[0] = last.val[0]; out[1] = last.val[1]; out[2] = last.val[2];
+    return out;
+  }
 
   for (let i = 0; i < track.length - 1; i++) {
     const p0 = track[i];
     const p1 = track[i + 1];
     if (time >= p0.time && time <= p1.time) {
       const alpha = p1.time === p0.time ? 0 : (time - p0.time) / (p1.time - p0.time);
-      return [
-        p0.val[0] + (p1.val[0] - p0.val[0]) * alpha,
-        p0.val[1] + (p1.val[1] - p0.val[1]) * alpha,
-        p0.val[2] + (p1.val[2] - p0.val[2]) * alpha,
-      ];
+      out[0] = p0.val[0] + (p1.val[0] - p0.val[0]) * alpha;
+      out[1] = p0.val[1] + (p1.val[1] - p0.val[1]) * alpha;
+      out[2] = p0.val[2] + (p1.val[2] - p0.val[2]) * alpha;
+      return out;
     }
   }
-  return track[0].val;
+  out[0] = first.val[0]; out[1] = first.val[1]; out[2] = first.val[2];
+  return out;
+}
+
+// Objek pose statis yang digunakan berulang kali untuk menghindari Garbage Collection
+const IDLE_POSE = {
+  root: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Waist: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Head: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Body: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Right Arm": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Left Arm": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Right Leg": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Left Leg": { pos: [0, 0, 0], rot: [0, 0, 0] },
+};
+
+const MOVE_POSE = {
+  root: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Waist: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Head: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  Body: { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Right Arm": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Left Arm": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Right Leg": { pos: [0, 0, 0], rot: [0, 0, 0] },
+  "Left Leg": { pos: [0, 0, 0], rot: [0, 0, 0] },
+};
+
+/**
+ * Isi data animasi Idle ke buffer statis IDLE_POSE (Zero GC Allocation)
+ */
+function fillIdleAnimation(t) {
+  const pRoot = IDLE_POSE.root;
+  pRoot.pos[0] = Math.sin(t * 122.5 * DEG2RAD) * 0.25; pRoot.pos[1] = 0; pRoot.pos[2] = 0;
+  pRoot.rot[0] = 0; pRoot.rot[1] = 0; pRoot.rot[2] = 0;
+
+  const pWaist = IDLE_POSE.Waist;
+  pWaist.pos[0] = 0; pWaist.pos[1] = Math.cos(t * 245 * DEG2RAD) * 0.15 - 0.15; pWaist.pos[2] = 0;
+  pWaist.rot[0] = 0; pWaist.rot[1] = 0; pWaist.rot[2] = 0;
+
+  const pHead = IDLE_POSE.Head;
+  pHead.pos[0] = 0; pHead.pos[1] = 0; pHead.pos[2] = 0;
+  pHead.rot[0] = Math.sin((t * 245 + 25) * DEG2RAD) * -2.75;
+  pHead.rot[1] = 0;
+  pHead.rot[2] = Math.cos(t * 122.5 * DEG2RAD) * -2.5;
+
+  const pBody = IDLE_POSE.Body;
+  pBody.pos[0] = 0; pBody.pos[1] = 0; pBody.pos[2] = 0;
+  pBody.rot[0] = 0; pBody.rot[1] = 0; pBody.rot[2] = 0;
+
+  const pRArm = IDLE_POSE["Right Arm"];
+  pRArm.pos[0] = 0; pRArm.pos[1] = Math.cos(t * 245 * DEG2RAD) * 0.1 + 0.05; pRArm.pos[2] = 0;
+  pRArm.rot[0] = 0; pRArm.rot[1] = 0; pRArm.rot[2] = Math.sin(t * 245 * DEG2RAD) * 1.25 + 1.15;
+
+  const pLArm = IDLE_POSE["Left Arm"];
+  pLArm.pos[0] = 0; pLArm.pos[1] = Math.cos(t * 245 * DEG2RAD) * 0.1 + 0.05; pLArm.pos[2] = 0;
+  pLArm.rot[0] = 0; pLArm.rot[1] = 0; pLArm.rot[2] = Math.sin(t * 245 * DEG2RAD) * -1.25 - 1.15;
+
+  const pRLeg = IDLE_POSE["Right Leg"];
+  pRLeg.pos[0] = 0; pRLeg.pos[1] = 0; pRLeg.pos[2] = 0;
+  pRLeg.rot[0] = 0; pRLeg.rot[1] = 0; pRLeg.rot[2] = Math.sin(t * 122.5 * DEG2RAD) * 1.2;
+
+  const pLLeg = IDLE_POSE["Left Leg"];
+  pLLeg.pos[0] = 0; pLLeg.pos[1] = 0; pLLeg.pos[2] = 0;
+  pLLeg.rot[0] = 0; pLLeg.rot[1] = 0; pLLeg.rot[2] = Math.sin(t * 122.5 * DEG2RAD) * 1.2;
 }
 
 /**
- * Evaluasi data transformasi Animasi Idle pada waktu t (detik)
+ * Isi data animasi Move ke buffer statis MOVE_POSE (Zero GC Allocation)
  */
-function evaluateIdleAnimation(t) {
-  // Dalam Molang, math.sin & math.cos menerima derajat
-  return {
-    root: {
-      position: [Math.sin(t * 122.5 * DEG2RAD) * 0.25, 0, 0],
-      rotation: [0, 0, 0],
-    },
-    Waist: {
-      position: [0, Math.cos(t * 245 * DEG2RAD) * 0.15 - 0.15, 0],
-      rotation: [0, 0, 0],
-    },
-    Head: {
-      position: [0, 0, 0],
-      rotation: [
-        Math.sin((t * 245 + 25) * DEG2RAD) * -2.75,
-        0,
-        Math.cos(t * 122.5 * DEG2RAD) * -2.5,
-      ],
-    },
-    Body: {
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-    },
-    "Right Arm": {
-      position: [0, Math.cos(t * 245 * DEG2RAD) * 0.1 + 0.05, 0],
-      rotation: [0, 0, Math.sin(t * 245 * DEG2RAD) * 1.25 + 1.15],
-    },
-    "Left Arm": {
-      position: [0, Math.cos(t * 245 * DEG2RAD) * 0.1 + 0.05, 0],
-      rotation: [0, 0, Math.sin(t * 245 * DEG2RAD) * -1.25 - 1.15],
-    },
-    "Right Leg": {
-      position: [0, 0, 0],
-      rotation: [0, 0, Math.sin(t * 122.5 * DEG2RAD) * 1.2],
-    },
-    "Left Leg": {
-      position: [0, 0, 0],
-      rotation: [0, 0, Math.sin(t * 122.5 * DEG2RAD) * 1.2],
-    },
-  };
-}
-
-/**
- * Evaluasi data transformasi Animasi Move pada waktu t (detik, durasi siklus 0.6667 detik)
- */
-function evaluateMoveAnimation(rawT) {
+function fillMoveAnimation(rawT) {
   const moveAnimData = animMoveJson.animations["animation.actor.move"];
   const cycleLength = moveAnimData.animation_length || 0.6667;
   const t = rawT % cycleLength;
 
-  const bodyPos = evalTrack(MOVE_TRACKS.bodyPos, t);
-  const headPos = evalTrack(MOVE_TRACKS.headPos, t);
-  const rLegRot = evalTrack(MOVE_TRACKS.rLegRot, t);
-  const rLegPos = evalTrack(MOVE_TRACKS.rLegPos, t);
-  const lLegRot = evalTrack(MOVE_TRACKS.lLegRot, t);
-  const lLegPos = evalTrack(MOVE_TRACKS.lLegPos, t);
+  const pRoot = MOVE_POSE.root;
+  pRoot.pos[0] = 0; pRoot.pos[1] = 0; pRoot.pos[2] = 0.75;
+  pRoot.rot[0] = 0; pRoot.rot[1] = 0; pRoot.rot[2] = 0;
 
-  return {
-    root: {
-      position: [0, 0, 0.75],
-      rotation: [0, 0, 0],
-    },
-    Waist: {
-      position: [0, 0, 0],
-      rotation: [5, 0, -Math.cos(t * 540 * DEG2RAD) * 2],
-    },
-    Body: {
-      position: bodyPos,
-      rotation: [0, -Math.sin(t * 540 * DEG2RAD) * 24, 0],
-    },
-    Head: {
-      position: headPos,
-      rotation: [
-        Math.sin((t * 1080 - 12) * DEG2RAD) * 8,
-        -Math.sin((t * 540 - 45) * DEG2RAD) * 6,
-        -Math.sin(t * 540 * DEG2RAD) * 4,
-      ],
-    },
-    "Right Arm": {
-      position: [0, -Math.cos(t * 1080 * DEG2RAD) * 0.5, 0],
-      rotation: [
-        Math.sin((t * 540 + 10) * DEG2RAD) * -60,
-        Math.sin(t * 540 * DEG2RAD) * 18,
-        0,
-      ],
-    },
-    "Left Arm": {
-      position: [0, -Math.cos(t * 1080 * DEG2RAD) * 0.5, 0],
-      rotation: [
-        Math.sin((t * 540 + 10) * DEG2RAD) * 60,
-        Math.sin(t * 540 * DEG2RAD) * 18,
-        0,
-      ],
-    },
-    "Right Leg": {
-      position: rLegPos,
-      rotation: rLegRot,
-    },
-    "Left Leg": {
-      position: lLegPos,
-      rotation: lLegRot,
-    },
-  };
+  const pWaist = MOVE_POSE.Waist;
+  pWaist.pos[0] = 0; pWaist.pos[1] = 0; pWaist.pos[2] = 0;
+  pWaist.rot[0] = 5; pWaist.rot[1] = 0; pWaist.rot[2] = -Math.cos(t * 540 * DEG2RAD) * 2;
+
+  const pBody = MOVE_POSE.Body;
+  evalTrackOut(MOVE_TRACKS.bodyPos, t, pBody.pos);
+  pBody.rot[0] = 0; pBody.rot[1] = -Math.sin(t * 540 * DEG2RAD) * 24; pBody.rot[2] = 0;
+
+  const pHead = MOVE_POSE.Head;
+  evalTrackOut(MOVE_TRACKS.headPos, t, pHead.pos);
+  pHead.rot[0] = Math.sin((t * 1080 - 12) * DEG2RAD) * 8;
+  pHead.rot[1] = -Math.sin((t * 540 - 45) * DEG2RAD) * 6;
+  pHead.rot[2] = -Math.sin(t * 540 * DEG2RAD) * 4;
+
+  const pRArm = MOVE_POSE["Right Arm"];
+  pRArm.pos[0] = 0; pRArm.pos[1] = -Math.cos(t * 1080 * DEG2RAD) * 0.5; pRArm.pos[2] = 0;
+  pRArm.rot[0] = Math.sin((t * 540 + 10) * DEG2RAD) * -60;
+  pRArm.rot[1] = Math.sin(t * 540 * DEG2RAD) * 18;
+  pRArm.rot[2] = 0;
+
+  const pLArm = MOVE_POSE["Left Arm"];
+  pLArm.pos[0] = 0; pLArm.pos[1] = -Math.cos(t * 1080 * DEG2RAD) * 0.5; pLArm.pos[2] = 0;
+  pLArm.rot[0] = Math.sin((t * 540 + 10) * DEG2RAD) * 60;
+  pLArm.rot[1] = Math.sin(t * 540 * DEG2RAD) * 18;
+  pLArm.rot[2] = 0;
+
+  const pRLeg = MOVE_POSE["Right Leg"];
+  evalTrackOut(MOVE_TRACKS.rLegPos, t, pRLeg.pos);
+  evalTrackOut(MOVE_TRACKS.rLegRot, t, pRLeg.rot);
+
+  const pLLeg = MOVE_POSE["Left Leg"];
+  evalTrackOut(MOVE_TRACKS.lLegPos, t, pLLeg.pos);
+  evalTrackOut(MOVE_TRACKS.lLegRot, t, pLLeg.rot);
 }
 
 /**
@@ -457,7 +482,7 @@ export function createPlayerCharacter(playerConfig, scene) {
 
         mesh.position.set(cx, cy, cz);
         mesh.castShadow = true;
-        mesh.receiveShadow = true;
+        mesh.receiveShadow = false; // Optimasi GPU: Hindari 80x fragment shadow map lookup per frame pada anggota tubuh
         group.add(mesh);
       });
     }
@@ -519,7 +544,7 @@ export function createPlayerCharacter(playerConfig, scene) {
     y: playerConfig.startPos[1],
     vx: 0,
     vz: 0,
-    speed: 8.5,
+    speed: playerConfig.speed || 3.8,
     currentAngle: initialAngle,
     animWeightMove: 0.0, // 0 = Idle murni, 1 = Move murni
     idleTime: Math.random() * 2.0, // Stagger animasi idle
@@ -538,7 +563,7 @@ export function updatePlayerCharacter(player, delta, inputX, inputY, boundX, bou
   const targetVx = inputX * player.speed;
   const targetVz = inputY * player.speed;
 
-  const accel = 18.0; // Akselerasi halus
+  const accel = 14.0; // Akselerasi halus & responsif sesuai kecepatan baru 3.8
   player.vx += (targetVx - player.vx) * Math.min(accel * delta, 1.0);
   player.vz += (targetVz - player.vz) * Math.min(accel * delta, 1.0);
 
@@ -592,11 +617,20 @@ export function updatePlayerCharacter(player, delta, inputX, inputY, boundX, bou
   player.moveTime += delta * moveAnimRate;
   player.idleTime += delta;
 
-  // 4. Evaluasi & Blending Animasi Idle <-> Move
-  const idlePose = evaluateIdleAnimation(player.idleTime);
-  const movePose = evaluateMoveAnimation(player.moveTime);
-
+  // 4. Evaluasi & Blending Animasi Idle <-> Move (Zero-Allocation & Fast-Path)
   const wMove = Math.max(0, Math.min(1, player.animWeightMove));
+  const isPureIdle = wMove <= 0.001;
+  const isPureMove = wMove >= 0.999;
+
+  if (isPureIdle) {
+    fillIdleAnimation(player.idleTime);
+  } else if (isPureMove) {
+    fillMoveAnimation(player.moveTime);
+  } else {
+    fillIdleAnimation(player.idleTime);
+    fillMoveAnimation(player.moveTime);
+  }
+
   const wIdle = 1.0 - wMove;
 
   const boneNames = [
@@ -610,19 +644,35 @@ export function updatePlayerCharacter(player, delta, inputX, inputY, boundX, bou
     "Left Leg",
   ];
 
-  boneNames.forEach((name) => {
+  for (let bi = 0; bi < boneNames.length; bi++) {
+    const name = boneNames[bi];
     const boneGroup = player.bonesMap[name];
-    if (!boneGroup) return;
-
-    const bIdle = idlePose[name] || { rotation: [0, 0, 0], position: [0, 0, 0] };
-    const bMove = movePose[name] || { rotation: [0, 0, 0], position: [0, 0, 0] };
-
-    // Blending rotasi (derajat)
-    const rx = bIdle.rotation[0] * wIdle + bMove.rotation[0] * wMove;
-    const ry = bIdle.rotation[1] * wIdle + bMove.rotation[1] * wMove;
-    const rz = bIdle.rotation[2] * wIdle + bMove.rotation[2] * wMove;
+    if (!boneGroup) continue;
 
     const baseRot = boneGroup.userData.baseRotation || [0, 0, 0];
+    const basePos = boneGroup.userData.basePosition || [0, 0, 0];
+
+    let rx, ry, rz, px, py, pz;
+
+    if (isPureIdle) {
+      const bIdle = IDLE_POSE[name];
+      rx = bIdle.rot[0]; ry = bIdle.rot[1]; rz = bIdle.rot[2];
+      px = bIdle.pos[0]; py = bIdle.pos[1]; pz = bIdle.pos[2];
+    } else if (isPureMove) {
+      const bMove = MOVE_POSE[name];
+      rx = bMove.rot[0]; ry = bMove.rot[1]; rz = bMove.rot[2];
+      px = bMove.pos[0]; py = bMove.pos[1]; pz = bMove.pos[2];
+    } else {
+      const bIdle = IDLE_POSE[name];
+      const bMove = MOVE_POSE[name];
+      rx = bIdle.rot[0] * wIdle + bMove.rot[0] * wMove;
+      ry = bIdle.rot[1] * wIdle + bMove.rot[1] * wMove;
+      rz = bIdle.rot[2] * wIdle + bMove.rot[2] * wMove;
+      px = bIdle.pos[0] * wIdle + bMove.pos[0] * wMove;
+      py = bIdle.pos[1] * wIdle + bMove.pos[1] * wMove;
+      pz = bIdle.pos[2] * wIdle + bMove.pos[2] * wMove;
+    }
+
     boneGroup.rotation.set(
       (baseRot[0] + rx) * DEG2RAD,
       (baseRot[1] + ry) * DEG2RAD,
@@ -630,18 +680,12 @@ export function updatePlayerCharacter(player, delta, inputX, inputY, boundX, bou
       "ZYX"
     );
 
-    // Blending translasi posisi
-    const px = bIdle.position[0] * wIdle + bMove.position[0] * wMove;
-    const py = bIdle.position[1] * wIdle + bMove.position[1] * wMove;
-    const pz = bIdle.position[2] * wIdle + bMove.position[2] * wMove;
-
-    const basePos = boneGroup.userData.basePosition || [0, 0, 0];
     boneGroup.position.set(
       basePos[0] + px * MODEL_SCALE,
       basePos[1] + py * MODEL_SCALE,
       basePos[2] + pz * MODEL_SCALE
     );
-  });
+  }
 }
 
 /**

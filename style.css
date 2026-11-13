@@ -1,464 +1,55 @@
-/* ==========================================================================
-   GameCube 4Player Mini Game - Root Stylesheet (v0.0.3 Portrait)
-   ========================================================================== */
-
-:root {
-  /* Palet Warna Solid */
-  --bg-color-main: #14121e;
-  --btn-bg: #49339e;
-  --btn-bg-hover: #5d43c2;
-  --btn-bg-active: #3a2880;
-  --btn-text: #ffffff;
-  --box-bg-1: #25203b;
-  --box-bg-2: #2f284b;
-  --box-bg-3: #39315b;
-  --box-game1: #4a2e80;
-  --box-game1-hover: #633eb0;
-  --box-bg-hover: #4a3e78;
-  --box-border: #443b6c;
-  --ctrl-bg: rgba(255, 255, 255, 0.08);
-  --ctrl-hover: rgba(255, 255, 255, 0.16);
-
-  /* Dimensi & Layout Portrait */
-  --grid-gap: 14px;
-  --container-padding: 16px;
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0B0D12; color: #fff; font-family: system-ui, sans-serif; touch-action: none; }
+[hidden] { display: none !important; }
+#rotated-stage {
+  position: fixed; left: 50%; top: 50%;
+  width: 100vw; height: 100dvh;
+  transform: translate(-50%, -50%);
+  overflow: hidden; background: #0B0D12;
 }
-
-/* Reset CSS & Fullscreen Layout */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+.view { position: absolute; inset: 0; overflow: hidden; }
+#game-grid {
+  position: absolute; inset: 5% 5%;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 30%); gap: 3.2%;
+  overflow-y: auto; overscroll-behavior: contain;
+  align-content: start; padding: 0 0 3%;
+  scrollbar-width: thin; scrollbar-color: #626873 transparent;
 }
-
-html,
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: var(--bg-color-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+.game-slot {
+  min-width: 0; min-height: 0; border: 0; border-radius: 10px;
+  background: #252A33; color: #F4F5F7; font-size: clamp(12px, 3.2cqw, 22px);
+  display: grid; place-items: center; cursor: pointer;
+  container-type: inline-size; aspect-ratio: 1.5 / 1;
 }
-
-/* Wrapper Layar Penuh (Fullscreen Screens) */
-.screen {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  background-color: var(--bg-color-main);
-  opacity: 1;
-  transition: opacity 0.2s ease;
+.game-slot:active { background: #343B47; }
+#game-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #0B0D12; }
+#back-button {
+  position: absolute; z-index: 20; left: 1.5%; top: 2%;
+  width: clamp(30px, 5.5vh, 54px); height: clamp(30px, 5.5vh, 54px);
+  border: 0; border-radius: 50%; background: rgba(30,35,44,.72);
+  color: white; font-size: clamp(20px, 4vh, 34px); line-height: 1;
 }
-
-.screen.hidden {
-  display: none !important;
-  opacity: 0;
-  pointer-events: none;
+#controls-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+.virtual-stick {
+  position: absolute; width: clamp(74px, 17vh, 148px); height: clamp(74px, 17vh, 148px);
+  border-radius: 50%; background: rgba(220,225,235,.16);
+  border: 2px solid rgba(255,255,255,.25); pointer-events: auto;
+  touch-action: none; user-select: none;
 }
-
-.screen.active {
-  display: flex;
-  opacity: 1;
-  pointer-events: auto;
+.virtual-stick .knob {
+  position: absolute; width: 42%; height: 42%; left: 29%; top: 29%;
+  border-radius: 50%; background: var(--player-color);
+  opacity: .82; border: 2px solid rgba(255,255,255,.48);
+  box-shadow: 0 1px 8px rgba(0,0,0,.25); pointer-events: none;
 }
-
-/* ==========================================================================
-   1. HALAMAN AWAL (Initial Page - Portrait)
-   ========================================================================== */
-#initial-screen {
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  position: relative;
-  padding: 20px;
-}
-
-/* Tombol Kontrol Atas (Fullscreen) */
-.top-controls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  gap: 10px;
-  z-index: 10;
-}
-
-.ctrl-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: var(--ctrl-bg);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #e2e8f0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.ctrl-btn:hover {
-  background-color: var(--ctrl-hover);
-}
-
-.ctrl-btn:active {
-  transform: scale(0.96);
-}
-
-/* Tombol Kontrol Atas (Fullscreen) - Diputar 90° untuk Mode Landscape */
-div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1),
-#initial-screen .ctrl-btn {
-  transform: rotate(90deg);
-  transform-origin: center;
-}
-
-div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1):hover,
-#initial-screen .ctrl-btn:hover {
-  background-color: var(--ctrl-hover);
-  transform: rotate(90deg) scale(1.03);
-}
-
-div#initial-screen:nth-of-type(1) > div:nth-of-type(1) > button#btn-fullscreen:nth-of-type(1):active,
-#initial-screen .ctrl-btn:active {
-  transform: rotate(90deg) scale(0.96);
-}
-
-/* Tombol Utama Tengah - Diputar 90° agar Terlihat Mode Landscape */
-div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1),
-.btn-permainan {
-  appearance: none;
-  border: none;
-  outline: none;
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  font-size: clamp(1.2rem, 5vw, 1.8rem);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  padding: clamp(16px, 3vh, 24px) clamp(36px, 10vw, 64px);
-  border-radius: 14px;
-  cursor: pointer;
-  box-shadow: 0 0 0 6px #2a1f52, 0 12px 28px rgba(0, 0, 0, 0.6);
-  transform: rotate(90deg);
-  transform-origin: center;
-  transition: transform 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-  touch-action: manipulation;
-}
-
-div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1):hover,
-.btn-permainan:hover {
-  background-color: var(--btn-bg-hover);
-  transform: rotate(90deg) scale(1.03);
-  box-shadow: 0 0 0 6px #352668, 0 14px 32px rgba(0, 0, 0, 0.65);
-}
-
-div#initial-screen:nth-of-type(1) > button#btn-permainan:nth-of-type(1):active,
-.btn-permainan:active {
-  background-color: var(--btn-bg-active);
-  transform: rotate(90deg) scale(0.97);
-  box-shadow: 0 0 0 6px #201740, 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* ==========================================================================
-   2. MENU GAME (Rotasi 90° Mode Landscape, Scroll Horizontal, 3 Slot)
-   ========================================================================== */
-#game-menu-screen {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100vh;
-  height: 100vw;
-  transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center center;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-@media (orientation: landscape) {
-  #game-menu-screen {
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    transform: none;
+.virtual-stick.p1 { left: 3%; bottom: 4%; --player-color: #FF5252; }
+.virtual-stick.p2 { right: 3%; bottom: 4%; --player-color: #42A5F5; }
+.virtual-stick.p3 { left: 3%; top: 4%; --player-color: #66BB6A; }
+.virtual-stick.p4 { right: 3%; top: 4%; --player-color: #FFCA28; }
+@media (orientation: portrait) {
+  #rotated-stage {
+    width: 100dvh; height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
   }
-}
-
-/* CSS selector 2: div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) */
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1),
-.menu-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 24px;
-  background-color: rgba(15, 13, 24, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  width: 100%;
-  z-index: 10;
-  flex-shrink: 0;
-}
-
-.menu-header-title {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-/* CSS selector 1: div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) > button#btn-back-to-initial:nth-of-type(1) */
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(1) > button#btn-back-to-initial:nth-of-type(1),
-.btn-back {
-  background-color: var(--ctrl-bg);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.btn-back:hover {
-  background-color: var(--ctrl-hover);
-  transform: scale(1.02);
-}
-
-.btn-back:active {
-  transform: scale(0.96);
-}
-
-/* Mode Scroll Horizontal */
-.menu-scroll-container {
-  flex: 1;
-  width: 100%;
-  height: calc(100% - 52px);
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 14px 20px;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  display: flex;
-  align-items: center;
-}
-
-.menu-scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.menu-scroll-container::-webkit-scrollbar-track {
-  background-color: #120f1b;
-}
-
-.menu-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #3b325c;
-  border-radius: 3px;
-}
-
-/* Baris Grid Horizontal */
-.game-grid {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: var(--grid-gap);
-  height: 100%;
-  align-items: center;
-  width: max-content;
-  padding: 0 4px;
-}
-
-/* Kotak Game Solid: Tampilan Tepat 3 Slot per Layar */
-/* CSS selectors 3, 4, 5, 6, 7, 8, 9, 10 */
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(1),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(2),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(3),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(4),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(5),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(6),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(7),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div:nth-of-type(8),
-div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div,
-.game-box {
-  position: relative;
-  flex: 0 0 calc((100vh - 40px - (var(--grid-gap) * 2)) / 3);
-  width: calc((100vh - 40px - (var(--grid-gap) * 2)) / 3);
-  max-width: 320px;
-  height: min(220px, calc(100% - 16px));
-  aspect-ratio: 16 / 10;
-  background-color: var(--box-bg-1);
-  border: 2px solid var(--box-border);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
-  touch-action: manipulation;
-  flex-shrink: 0;
-}
-
-@media (orientation: landscape) {
-  div#game-menu-screen:nth-of-type(2) > div:nth-of-type(2) > div#game-grid:nth-of-type(1) > div,
-  .game-box {
-    flex: 0 0 calc((100vw - 40px - (var(--grid-gap) * 2)) / 3);
-    width: calc((100vw - 40px - (var(--grid-gap) * 2)) / 3);
-  }
-}
-
-.game-box:nth-child(even) {
-  background-color: var(--box-bg-2);
-}
-
-.game-box:nth-child(3n) {
-  background-color: var(--box-bg-3);
-}
-
-.game-box:hover {
-  background-color: var(--box-bg-hover);
-  border-color: #7262b0;
-  transform: translateY(-2px);
-}
-
-.game-box:active {
-  transform: scale(0.97);
-  background-color: #5d4e96;
-}
-
-/* Kotak Khusus Game 1 */
-.game-box.game-1-slot {
-  background-color: var(--box-game1);
-  border-color: #8b5cf6;
-}
-
-.game-box.game-1-slot:hover {
-  background-color: var(--box-game1-hover);
-  border-color: #a78bfa;
-}
-
-.game-slot-title {
-  color: #ffffff;
-  font-weight: 800;
-  font-size: clamp(0.95rem, 3.5vw, 1.25rem);
-  letter-spacing: 0.05em;
-  pointer-events: none;
-}
-
-/* ==========================================================================
-   3. PEMILIHAN JUMLAH PEMAIN (Rotasi 90° Selaras Landscape)
-   ========================================================================== */
-#player-select-screen {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100vh;
-  height: 100vw;
-  transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center center;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-@media (orientation: landscape) {
-  #player-select-screen {
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    transform: none;
-  }
-}
-
-.player-select-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--container-padding);
-}
-
-.player-select-card {
-  background-color: #1a1827;
-  border: 1px solid #2e2a42;
-  border-radius: 8px;
-  padding: 20px 28px;
-  text-align: center;
-  max-width: 520px;
-  width: 100%;
-}
-
-.select-title {
-  color: #ffffff;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.select-subtitle {
-  color: #8b86a3;
-  font-size: 0.85rem;
-  margin-bottom: 18px;
-}
-
-.player-buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.btn-player {
-  background-color: #242136;
-  border: 1px solid #2e2a42;
-  border-radius: 6px;
-  padding: 14px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.12s ease, transform 0.1s ease;
-}
-
-.player-num {
-  font-size: 1.4rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.player-status {
-  font-size: 0.7rem;
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-.btn-disabled {
-  background-color: #1e1c2e;
-  border-color: #26233a;
-  color: #55506d;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn-active-4p {
-  background-color: #5b3fa3;
-  border-color: #7b59d0;
-  color: #ffffff;
-}
-
-.btn-active-4p:hover {
-  background-color: #6a49be;
-  transform: translateY(-1px);
-}
-
-.btn-active-4p:active {
-  background-color: #4f368e;
-  transform: scale(0.97);
 }

@@ -1,94 +1,24 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <title>GameCube 4Player Mini Game</title>
-    <meta
-      name="description"
-      content="GameCube 4Player Mini Game versi 0.0.3 dengan orientasi portrait dan arena gameplay 3D Three.js."
-    />
-    <meta property="og:title" content="GameCube 4Player Mini Game" />
-    <meta
-      property="og:description"
-      content="GameCube 4Player Mini Game versi 0.0.3 dengan orientasi portrait dan arena gameplay 3D Three.js."
-    />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <!-- 1. HALAMAN AWAL (Initial Page - Portrait) -->
-    <div id="initial-screen" class="screen active">
-      <!-- Tombol Kontrol Tampilan (Fullscreen) -->
-      <div class="top-controls">
-        <button id="btn-fullscreen" type="button" class="ctrl-btn" title="Layar Penuh">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-          <span>Fullscreen</span>
-        </button>
-      </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0D12">
+  <title>4 Player Party Arena</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main id="rotated-stage">
+    <section id="menu-view" class="view">
+      <div id="game-grid" aria-label="Daftar mini-game"></div>
+    </section>
 
-      <!-- Tombol Utama Tengah -->
-      <button id="btn-permainan" type="button" class="btn-permainan">
-        PERMAINAN
-      </button>
-    </div>
-
-    <!-- 2. MENU GAME (Game Menu Page - Portrait) -->
-    <div id="game-menu-screen" class="screen hidden">
-      <div class="menu-top-bar">
-        <button id="btn-back-to-initial" type="button" class="btn-back">
-          &larr; Kembali
-        </button>
-        <span class="menu-header-title">DAFTAR GAME</span>
-      </div>
-      <div class="menu-scroll-container">
-        <div id="game-grid" class="game-grid">
-          <!-- Kotak game 1 dan slot lainnya akan di-render melalui script.js -->
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. PEMILIHAN JUMLAH PEMAIN (Player Selection - Root Portrait) -->
-    <div id="player-select-screen" class="screen hidden">
-      <div class="menu-top-bar">
-        <button id="btn-back-to-menu" type="button" class="btn-back">
-          &larr; Kembali
-        </button>
-        <span class="menu-header-title">PILIH PEMAIN</span>
-      </div>
-      <div class="player-select-container">
-        <div class="player-select-card">
-          <h2 class="select-title">PILIH JUMLAH PEMAIN</h2>
-          <p class="select-subtitle">Game 1: 3D Cube Arena</p>
-
-          <div class="player-buttons-grid">
-            <button type="button" class="btn-player btn-disabled" data-players="1" disabled>
-              <span class="player-num">1P</span>
-              <span class="player-status">Belum Tersedia</span>
-            </button>
-            <button type="button" class="btn-player btn-disabled" data-players="2" disabled>
-              <span class="player-num">2P</span>
-              <span class="player-status">Belum Tersedia</span>
-            </button>
-            <button type="button" class="btn-player btn-disabled" data-players="3" disabled>
-              <span class="player-num">3P</span>
-              <span class="player-status">Belum Tersedia</span>
-            </button>
-            <button type="button" id="btn-select-4p" class="btn-player btn-active-4p" data-players="4">
-              <span class="player-num">4P</span>
-              <span class="player-status">Mulai</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script type="module" src="./script.js"></script>
-  </body>
+    <section id="game-view" class="view" hidden>
+      <iframe id="game-frame" title="Mini-game" allow="fullscreen; autoplay"></iframe>
+      <button id="back-button" type="button" aria-label="Kembali ke menu">‹</button>
+      <div id="controls-layer" aria-label="Kontrol pemain"></div>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
 </html>

@@ -2,8 +2,8 @@
 // Tidak mengikuti pemain. Ketinggian dihitung dari ukuran arena & aspect layar.
 import * as THREE from 'three';
 
-export const CAMERA_FOV = 45;                    // derajat (vertikal)
-export const CAMERA_TILT = 0 * Math.PI / 180;   // kemiringan kecil dari tegak lurus agar karakter terbaca
+export const CAMERA_FOV = 40;                    // derajat (vertikal)
+export const CAMERA_TILT = 10 * Math.PI / 180;   // kemiringan kecil dari tegak lurus agar karakter terbaca
 const MARGIN = 1.15;                              // ruang cadangan di sekeliling arena
 
 /** Jarak kamera agar seluruh arena persegi terlihat pada aspect tertentu. */

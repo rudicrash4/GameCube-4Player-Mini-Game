@@ -3,22 +3,94 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0B0D12">
-  <title>4 Player Party Arena</title>
-  <link rel="stylesheet" href="./style.css">
+  <meta name="theme-color" content="#262a3b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Mini-game Collection</title>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/hud.css">
+
+  <!--
+    Three.js dimuat lewat import map. Untuk berjalan offline, simpan three.module.js
+    di folder vendor/ lalu ubah alamat di bawah menjadi "./vendor/three.module.js".
+  -->
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
 </head>
 <body>
-  <main id="rotated-stage">
-    <section id="menu-view" class="view">
-      <div id="game-grid" aria-label="Daftar mini-game"></div>
-    </section>
+  <div id="app">
+    <canvas id="game-canvas" hidden></canvas>
 
-    <section id="game-view" class="view" hidden>
-      <iframe id="game-frame" title="Mini-game" allow="fullscreen; autoplay"></iframe>
-      <button id="back-button" type="button" aria-label="Kembali ke menu">‹</button>
-      <div id="controls-layer" aria-label="Kontrol pemain"></div>
-    </section>
-  </main>
-  <script type="module" src="./main.js"></script>
+    <div id="ui-root">
+
+      <!-- 8.1 OPENING -->
+      <section class="screen" id="screen-opening" data-screen="opening">
+        <div class="logo" aria-hidden="true">
+          <span style="background:var(--p1)"></span>
+          <span style="background:var(--p2)"></span>
+          <span style="background:var(--p3)"></span>
+          <span style="background:var(--p4)"></span>
+        </div>
+        <h1 class="title">MINI-GAME</h1>
+        <button class="btn btn--xl" id="btn-fullscreen" type="button">MULAI</button>
+        <button class="btn btn--ghost" id="btn-skip-fullscreen" type="button">Tanpa Fullscreen</button>
+      </section>
+
+      <!-- 8.2 MAIN MENU -->
+      <section class="screen" id="screen-main-menu" data-screen="main-menu" hidden>
+        <button class="btn btn--xl" id="btn-match" type="button">Match Mode</button>
+        <button class="btn btn--xl btn--blue" id="btn-freeplay" type="button">Free Play</button>
+      </section>
+
+      <!-- Match Mode: placeholder prototype -->
+      <section class="screen" id="screen-match" data-screen="match" hidden>
+        <h2 class="heading">Match Mode</h2>
+        <p class="note">Segera hadir</p>
+        <button class="btn" id="btn-match-back" type="button">Kembali</button>
+      </section>
+
+      <!-- 8.3 MENU MINIGAMES -->
+      <section class="screen screen--scroll" id="screen-minigames" data-screen="minigames" hidden>
+        <div class="slots" id="slot-scroll">
+          <div class="slot-grid" id="slot-grid"></div>
+        </div>
+        <button class="btn btn--back" id="btn-minigames-back" type="button">&lsaquo; Kembali</button>
+      </section>
+
+      <!-- 8.4 PLAYER SELECTION -->
+      <section class="screen" id="screen-players" data-screen="players" hidden>
+        <div class="player-row" id="player-row"></div>
+        <button class="btn" id="btn-players-back" type="button">Kembali</button>
+      </section>
+
+      <!-- 8.5 GAME (HUD, joystick, pause) -->
+      <section class="screen screen--game" id="screen-game" data-screen="game" hidden>
+        <div class="hud-controls" id="controls-root"></div>
+        <button class="pause-btn" id="btn-pause" type="button" aria-label="Pause"><i></i><i></i></button>
+        <div class="pause-overlay" id="pause-overlay" hidden>
+          <div class="pause-row">
+            <button class="btn btn--green" id="btn-resume" type="button">Lanjut</button>
+            <button class="btn" id="btn-restart" type="button">Ulang</button>
+            <button class="btn btn--red" id="btn-exit" type="button">Keluar</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="rotate-hint" id="rotate-hint" aria-hidden="true">
+      <div class="rotate-hint__phone"></div>
+      <p>Putar ke landscape</p>
+    </div>
+
+    <div class="error-overlay" id="error-overlay" hidden>
+      <h2 class="heading">Terjadi masalah</h2>
+      <pre id="error-text"></pre>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

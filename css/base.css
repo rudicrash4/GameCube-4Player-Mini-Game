@@ -1,0 +1,96 @@
+/* ===== Token global: warna solid, tanpa gradasi ===== */
+:root {
+  --bg: #262a3b;
+  --panel: #3a3f5c;
+  --ink: #11131c;
+  --text: #ffffff;
+  --muted: #8b90ab;
+  --accent: #ffd23f;
+  --blue: #4cc9f0;
+  --green: #6bd66b;
+  --red: #ff6b6b;
+
+  --p1: #e53935;
+  --p2: #1e88e5;
+  --p3: #43a047;
+  --p4: #fdd835;
+
+  --outline: 4px;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* Elemen hidden tidak boleh tertimpa aturan display komponen (TDD 13). */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+/* ===== Tombol ===== */
+.btn {
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-size: clamp(16px, 4.4vh, 26px);
+  color: var(--ink);
+  background: var(--accent);
+  border: var(--outline) solid var(--ink);
+  border-radius: 16px;
+  padding: .55em 1.5em;
+  min-width: 160px;
+  min-height: 56px;
+  box-shadow: 0 6px 0 var(--ink);
+  cursor: pointer;
+  transition: transform .06s, box-shadow .06s;
+}
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.btn:disabled { background: #4a4f69; color: var(--muted); cursor: not-allowed; }
+
+.btn--xl { font-size: clamp(20px, 6vh, 34px); min-width: clamp(220px, 34vw, 360px); min-height: 68px; }
+.btn--blue { background: var(--blue); }
+.btn--green { background: var(--green); }
+.btn--red { background: var(--red); }
+.btn--ghost { background: transparent; color: var(--text); border-color: var(--muted); box-shadow: none; min-height: 48px; font-size: clamp(14px, 3.4vh, 20px); }
+.btn--ghost:active:not(:disabled) { transform: none; box-shadow: none; background: var(--panel); }
+
+/* ===== Teks ===== */
+.title { margin: 0; font-size: clamp(32px, 14vh, 84px); letter-spacing: .08em; font-weight: 900; }
+.heading { margin: 0; font-size: clamp(24px, 8vh, 44px); font-weight: 900; }
+.note { margin: 0; color: var(--muted); font-size: clamp(16px, 4vh, 24px); }
+
+/* ===== Petunjuk rotasi ===== */
+.rotate-hint {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  background: var(--bg); font-weight: 800; font-size: 20px;
+}
+.rotate-hint p { margin: 0; }
+.rotate-hint__phone {
+  width: 56px; height: 96px; border: 6px solid var(--text); border-radius: 12px;
+  animation: rotate-phone 2s ease-in-out infinite;
+}
+@keyframes rotate-phone { 0%, 30% { transform: rotate(0); } 70%, 100% { transform: rotate(90deg); } }
+@media (orientation: portrait) { .rotate-hint { display: flex; } }
+
+/* ===== Error ===== */
+.error-overlay {
+  position: fixed; inset: 0; z-index: 200; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px;
+}
+.error-overlay pre { max-width: 90vw; max-height: 60vh; overflow: auto; white-space: pre-wrap; user-select: text; color: var(--red); }
